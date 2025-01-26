@@ -1,0 +1,52 @@
+{
+  "entity.gecko.chirps": {
+    "subtitle": "sounds.gekosmagic.entity.gecko.chirps",
+    "sounds": [
+      "gekosmagic:mob/gecko/chirps"
+    ]
+  },
+  "entity.gecko.hurt": {
+    "subtitle": "sounds.gekosmagic.entity.gecko.hurt",
+    "sounds": [
+      "gekosmagic:mob/gecko/hurt"
+    ]
+  },
+  "entity.gecko.death": {
+    "subtitle": "sounds.gekosmagic.entity.gecko.death",
+    "sounds": [
+      "gekosmagic:mob/gecko/death"
+    ]
+  },
+  "entity.gecko.eat": {
+    "subtitle": "sounds.gekosmagic.entity.gecko.eat",
+    "sounds": [
+      {
+        "name": "minecraft:mob/fox/eat1",
+        "volume": 0.65
+      },
+      {
+        "name": "minecraft:mob/fox/eat2",
+        "volume": 0.65
+      },
+      {
+        "name": "minecraft:mob/fox/eat3",
+        "volume": 0.65
+      }
+    ]
+  },
+  "entity.gecko.scales_drop": {
+    "subtitle": "sounds.gekosmagic.entity.gecko.scales_drop",
+    "sounds": [
+      "minecraft:mob/armadillo/scute_drop1",
+      {
+        "name": "minecraft:mob/armadillo/scute_drop1",
+        "pitch": 0.9
+      },
+      "minecraft:mob/armadillo/scute_drop2",
+      {
+        "name": "minecraft:mob/armadillo/scute_drop2",
+        "pitch": 0.9
+      }
+    ]
+  }
+}

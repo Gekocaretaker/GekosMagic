@@ -1,0 +1,39 @@
+{
+  "background_u_index": 0,
+  "background_v_index": 0,
+  "category": "gekosmagic:alchemy",
+  "description": "book.gekosmagic.scaled_tome.alchemy.powered_essence.description",
+  "hide_while_locked": false,
+  "icon": {
+    "height": 16,
+    "texture": "gekosmagic:textures/essence/powered_full.png",
+    "width": 16
+  },
+  "name": "book.gekosmagic.scaled_tome.alchemy.powered_essence.name",
+  "pages": [
+    {
+      "type": "modonomicon:spotlight",
+      "anchor": "",
+      "condition": {
+        "type": "modonomicon:none"
+      },
+      "item": {
+        "item": "minecraft:redstone"
+      },
+      "text": "book.gekosmagic.scaled_tome.alchemy.powered_essence.intro.text",
+      "title": "book.gekosmagic.scaled_tome.alchemy.powered_essence.intro.title"
+    }
+  ],
+  "parents": [
+    {
+      "draw_arrow": true,
+      "entry": "gekosmagic:alchemy/peace_essence",
+      "line_enabled": true,
+      "line_reversed": false
+    }
+  ],
+  "show_when_any_parent_unlocked": false,
+  "sort_number": 27,
+  "x": -9,
+  "y": 0
+}

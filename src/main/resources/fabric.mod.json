@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "id": "gekosmagic",
+  "version": "${version}",
+  "name": "GekosMagic",
+  "description": "",
+  "authors": [
+    "gekocaretaker"
+  ],
+  "contact": {},
+  "license": "GPL-3.0",
+  "icon": "assets/gekosmagic/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "client": [
+      "com.gekocaretaker.gekosmagic.client.GekosmagicClient"
+    ],
+    "main": [
+      "com.gekocaretaker.gekosmagic.Gekosmagic"
+    ],
+    "fabric-datagen": [
+      "com.gekocaretaker.gekosmagic.datagen.GekosmagicDataGen"
+    ],
+    "emi": [
+      "com.gekocaretaker.gekosmagic.compat.emi.GekosmagicEmi"
+    ]
+  },
+  "mixins": [
+    "gekosmagic.mixins.json",
+    {
+      "config": "gekosmagic.client.mixins.json",
+      "environment": "client"
+    }
+  ],
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric": "*",
+    "minecraft": "${minecraft_version}",
+    "trimmed": ">=3.0.0",
+    "fractal": ">=1.1.12+1.21",
+    "modonomicon": ">=1.98.0"
+  }
+}

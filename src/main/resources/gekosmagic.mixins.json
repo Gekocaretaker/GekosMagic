@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.gekocaretaker.gekosmagic.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "CreeperEntityMixin",
+    "FishingBobberEntityMixin",
+    "LivingEntityMixin",
+    "PhantomEntityFindTargetGoalMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

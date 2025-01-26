@@ -1,0 +1,10 @@
+{
+  "replace": false,
+  "values": {
+    "gekosmagic:trims/color_palettes/tokay_blue": "tokay_blue",
+    "gekosmagic:trims/color_palettes/orchid_pink": "orchid_pink",
+    "gekosmagic:trims/color_palettes/gecko_black": "gecko_black",
+    "gekosmagic:trims/color_palettes/sand_yellow": "sand_yellow",
+    "gekosmagic:trims/color_palettes/gecko_red": "gecko_red"
+  }
+}

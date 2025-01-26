@@ -1,0 +1,9 @@
+{
+  "item_model_index": 0,
+  "asset_name": "sand_yellow",
+  "description": {
+    "color": "#8d9867",
+    "translate": "trim_material.gekosmagic.sand_yellow"
+  },
+  "ingredient": "gekosmagic:sand_gecko_scale"
+}

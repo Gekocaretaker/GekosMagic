@@ -1,0 +1,6 @@
+{
+  "type": "gekosmagic:item",
+  "from": "gekosmagic:elixir",
+  "essence": "gekosmagic:spreading",
+  "to": "gekosmagic:splash_elixir"
+}

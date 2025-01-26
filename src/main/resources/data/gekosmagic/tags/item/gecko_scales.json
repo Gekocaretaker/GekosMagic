@@ -1,0 +1,10 @@
+{
+  "replace": false,
+  "values": [
+    "gekosmagic:tokay_gecko_scale",
+    "gekosmagic:orchid_gecko_scale",
+    "gekosmagic:black_gecko_scale",
+    "gekosmagic:cat_gecko_scale",
+    "gekosmagic:sand_gecko_scale"
+  ]
+}

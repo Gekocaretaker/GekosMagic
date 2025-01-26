@@ -1,0 +1,39 @@
+{
+  "background_u_index": 0,
+  "background_v_index": 0,
+  "category": "gekosmagic:alchemy",
+  "description": "book.gekosmagic.scaled_tome.alchemy.gritty_essence.description",
+  "hide_while_locked": false,
+  "icon": {
+    "height": 16,
+    "texture": "gekosmagic:textures/essence/gritty_full.png",
+    "width": 16
+  },
+  "name": "book.gekosmagic.scaled_tome.alchemy.gritty_essence.name",
+  "pages": [
+    {
+      "type": "modonomicon:spotlight",
+      "anchor": "",
+      "condition": {
+        "type": "modonomicon:none"
+      },
+      "item": {
+        "item": "gekosmagic:sand_gecko_scale"
+      },
+      "text": "book.gekosmagic.scaled_tome.alchemy.gritty_essence.intro.text",
+      "title": "book.gekosmagic.scaled_tome.alchemy.gritty_essence.intro.title"
+    }
+  ],
+  "parents": [
+    {
+      "draw_arrow": true,
+      "entry": "gekosmagic:alchemy/glowing_essence",
+      "line_enabled": true,
+      "line_reversed": false
+    }
+  ],
+  "show_when_any_parent_unlocked": false,
+  "sort_number": 18,
+  "x": -5,
+  "y": -2
+}

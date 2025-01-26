@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "gekosmagic:item/diffusing_elixir_overlay",
+    "layer1": "gekosmagic:item/diffusing_elixir"
+  }
+}

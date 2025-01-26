@@ -1,0 +1,39 @@
+{
+  "background_u_index": 0,
+  "background_v_index": 1,
+  "category": "gekosmagic:alchemy",
+  "description": "book.gekosmagic.scaled_tome.alchemy.alchemy_intro.description",
+  "hide_while_locked": false,
+  "icon": {
+    "item": "gekosmagic:alchemy_stand"
+  },
+  "name": "book.gekosmagic.scaled_tome.alchemy.alchemy_intro.name",
+  "pages": [
+    {
+      "type": "modonomicon:text",
+      "anchor": "",
+      "condition": {
+        "type": "modonomicon:none"
+      },
+      "show_title_separator": true,
+      "text": "book.gekosmagic.scaled_tome.alchemy.alchemy_intro.intro.text",
+      "title": "book.gekosmagic.scaled_tome.alchemy.alchemy_intro.intro.title",
+      "use_markdown_in_title": false
+    },
+    {
+      "type": "modonomicon:text",
+      "anchor": "",
+      "condition": {
+        "type": "modonomicon:none"
+      },
+      "show_title_separator": true,
+      "text": "book.gekosmagic.scaled_tome.alchemy.alchemy_intro.containment.text",
+      "title": "book.gekosmagic.scaled_tome.alchemy.alchemy_intro.containment.title",
+      "use_markdown_in_title": false
+    }
+  ],
+  "show_when_any_parent_unlocked": false,
+  "sort_number": 0,
+  "x": 4,
+  "y": -1
+}

@@ -1,0 +1,6 @@
+{
+  "type":"gekosmagic:item",
+  "from":"gekosmagic:bland_elixir",
+  "essence":"gekosmagic:peace",
+  "to":"gekosmagic:clear_elixir"
+}

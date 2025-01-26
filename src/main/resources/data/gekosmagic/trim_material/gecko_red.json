@@ -1,0 +1,9 @@
+{
+  "item_model_index": 0,
+  "asset_name": "gecko_red",
+  "description": {
+    "color": "#ec2d2d",
+    "translate": "trim_material.gekosmagic.gecko_red"
+  },
+  "ingredient": "gekosmagic:cat_gecko_scale"
+}

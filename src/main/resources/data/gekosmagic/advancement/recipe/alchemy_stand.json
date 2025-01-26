@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "gekosmagic:alchemy_stand"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    },
+    "has_breeze_rod": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "minecraft:breeze_rod"
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_breeze_rod"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "gekosmagic:alchemy_stand"
+    ]
+  }
+}

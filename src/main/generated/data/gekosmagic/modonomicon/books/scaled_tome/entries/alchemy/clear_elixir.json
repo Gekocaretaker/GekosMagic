@@ -1,0 +1,29 @@
+{
+  "background_u_index": 0,
+  "background_v_index": 0,
+  "category": "gekosmagic:alchemy",
+  "description": "book.gekosmagic.scaled_tome.alchemy.clear_elixir.description",
+  "hide_while_locked": false,
+  "icon": {
+    "item": "gekosmagic:clear_elixir"
+  },
+  "name": "book.gekosmagic.scaled_tome.alchemy.clear_elixir.name",
+  "pages": [
+    {
+      "type": "modonomicon:spotlight",
+      "anchor": "",
+      "condition": {
+        "type": "modonomicon:none"
+      },
+      "item": {
+        "item": "gekosmagic:clear_elixir"
+      },
+      "text": "book.gekosmagic.scaled_tome.alchemy.clear_elixir.intro.text",
+      "title": "book.gekosmagic.scaled_tome.alchemy.clear_elixir.intro.title"
+    }
+  ],
+  "show_when_any_parent_unlocked": false,
+  "sort_number": 6,
+  "x": 7,
+  "y": 1
+}

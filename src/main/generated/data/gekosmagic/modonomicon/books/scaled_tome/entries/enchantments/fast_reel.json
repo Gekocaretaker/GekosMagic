@@ -1,0 +1,48 @@
+{
+  "background_u_index": 0,
+  "background_v_index": 0,
+  "category": "gekosmagic:enchantments",
+  "description": "book.gekosmagic.scaled_tome.enchantments.fast_reel.description",
+  "hide_while_locked": false,
+  "icon": {
+    "item": "minecraft:fishing_rod"
+  },
+  "name": "book.gekosmagic.scaled_tome.enchantments.fast_reel.name",
+  "pages": [
+    {
+      "type": "modonomicon:spotlight",
+      "anchor": "",
+      "condition": {
+        "type": "modonomicon:none"
+      },
+      "item": {
+        "item": "minecraft:enchanted_book"
+      },
+      "text": "book.gekosmagic.scaled_tome.enchantments.fast_reel.intro.text",
+      "title": "book.gekosmagic.scaled_tome.enchantments.fast_reel.intro.title"
+    },
+    {
+      "type": "modonomicon:text",
+      "anchor": "",
+      "condition": {
+        "type": "modonomicon:none"
+      },
+      "show_title_separator": true,
+      "text": "book.gekosmagic.scaled_tome.enchantments.fast_reel.addium.text",
+      "title": "",
+      "use_markdown_in_title": false
+    }
+  ],
+  "parents": [
+    {
+      "draw_arrow": true,
+      "entry": "gekosmagic:enchantments/enchant_main",
+      "line_enabled": true,
+      "line_reversed": false
+    }
+  ],
+  "show_when_any_parent_unlocked": false,
+  "sort_number": 1,
+  "x": 1,
+  "y": 1
+}

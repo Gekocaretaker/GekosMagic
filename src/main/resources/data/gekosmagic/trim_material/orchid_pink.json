@@ -1,0 +1,9 @@
+{
+  "item_model_index": 0,
+  "asset_name": "orchid_pink",
+  "description": {
+    "color": "#ffbcef",
+    "translate": "trim_material.gekosmagic.orchid_pink"
+  },
+  "ingredient": "gekosmagic:orchid_gecko_scale"
+}

@@ -1,0 +1,28 @@
+{
+  "background_u_index": 0,
+  "background_v_index": 1,
+  "category": "gekosmagic:enchantments",
+  "description": "book.gekosmagic.scaled_tome.enchantments.enchant_main.description",
+  "hide_while_locked": false,
+  "icon": {
+    "item": "minecraft:lapis_lazuli"
+  },
+  "name": "book.gekosmagic.scaled_tome.enchantments.enchant_main.name",
+  "pages": [
+    {
+      "type": "modonomicon:text",
+      "anchor": "",
+      "condition": {
+        "type": "modonomicon:none"
+      },
+      "show_title_separator": true,
+      "text": "book.gekosmagic.scaled_tome.enchantments.enchant_main.intro.text",
+      "title": "book.gekosmagic.scaled_tome.enchantments.enchant_main.intro.title",
+      "use_markdown_in_title": false
+    }
+  ],
+  "show_when_any_parent_unlocked": false,
+  "sort_number": 0,
+  "x": 0,
+  "y": 0
+}

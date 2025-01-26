@@ -1,0 +1,9 @@
+{
+  "item_model_index": 0,
+  "asset_name": "tokay_blue",
+  "description": {
+    "color": "#5bbcf4",
+    "translate": "trim_material.gekosmagic.tokay_blue"
+  },
+  "ingredient": "gekosmagic:tokay_gecko_scale"
+}

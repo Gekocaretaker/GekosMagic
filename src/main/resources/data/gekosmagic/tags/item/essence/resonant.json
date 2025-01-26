@@ -1,0 +1,14 @@
+{
+  "replace": false,
+  "values": [
+    "minecraft:amethyst_block",
+    {
+      "id": "spectrum:topaz_block",
+      "required": false
+    },
+    {
+      "id": "spectrum:citrine_block",
+      "required": false
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "gekosmagic:item/orchid_gecko_scale"
+  }
+}

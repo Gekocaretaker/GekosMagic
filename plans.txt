@@ -1,0 +1,11 @@
+
+Will Happen:
+    Split elixir entity to splash_elixir and lingering_elixir, to fit mojang's changes.
+
+Likely to Happen:
+    Essence Transfer Blocks
+    Essence Condenser (makes essence from items)
+    More magic things that use essence
+
+Possible:
+    Data drive gecko variants?

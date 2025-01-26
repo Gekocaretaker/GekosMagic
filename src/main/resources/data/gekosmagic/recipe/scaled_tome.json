@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "#": {
+      "tag": "gekosmagic:gecko_scales"
+    },
+    "B": {
+      "item": "minecraft:book"
+    }
+  },
+  "pattern": [
+    "###",
+    "#B#",
+    "###"
+  ],
+  "result": {
+    "id": "modonomicon:modonomicon",
+    "components": {
+      "modonomicon:book_id": "gekosmagic:scaled_tome"
+    }
+  }
+}

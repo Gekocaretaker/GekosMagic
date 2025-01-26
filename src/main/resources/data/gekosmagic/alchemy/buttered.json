@@ -1,0 +1,6 @@
+{
+  "type":"gekosmagic:item",
+  "from":"gekosmagic:elixir",
+  "essence":"gekosmagic:midnight",
+  "to":"gekosmagic:buttered_elixir"
+}
