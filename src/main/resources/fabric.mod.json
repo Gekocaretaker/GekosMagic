@@ -32,12 +32,13 @@
       "environment": "client"
     }
   ],
+  "accessWidener": "gekosmagic.accesswidener",
   "depends": {
     "fabricloader": ">=${loader_version}",
     "fabric": "*",
     "minecraft": "${minecraft_version}",
     "trimmed": ">=3.0.0",
     "fractal": ">=1.1.12+1.21",
-    "modonomicon": ">=1.98.0"
+    "modonomicon": "1.98.0"
   }
 }
