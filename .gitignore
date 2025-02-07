@@ -26,5 +26,6 @@ replay_pid*
 .gradle/
 .idea/
 .build/
-run
+run/
 /build
+/src/main/generated/.cache/
