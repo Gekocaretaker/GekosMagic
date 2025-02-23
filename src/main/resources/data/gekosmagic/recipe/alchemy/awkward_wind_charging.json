@@ -1,0 +1,6 @@
+{
+  "type":"gekosmagic:elixir",
+  "from":"gekosmagic:awkward",
+  "essence":"gekosmagic:flow",
+  "to":"gekosmagic:awkward_wind_charging"
+}

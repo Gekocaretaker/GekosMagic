@@ -1,0 +1,6 @@
+{
+  "type":"gekosmagic:elixir",
+  "from":"gekosmagic:thick",
+  "essence":"gekosmagic:flow",
+  "to":"gekosmagic:thick_adept_rabbit"
+}

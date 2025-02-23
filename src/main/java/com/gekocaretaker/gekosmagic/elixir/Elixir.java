@@ -8,7 +8,6 @@ import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.codec.PacketCodecs;
-import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.entry.RegistryEntry;
 import org.jetbrains.annotations.Nullable;
 
@@ -55,7 +54,7 @@ public class Elixir {
         return Objects.equals(this.typeName, type);
     }
 
-    // Should return something like this:
+    // Should return something like this for registered elixirs:
     // item.gekosmagic.elixir.basic.effect.none
     public static String finishTranslationKey(Optional<RegistryEntry<Elixir>> elixir, String prefix, String center) {
         String base, type;
@@ -94,10 +93,8 @@ public class Elixir {
 
     public boolean hasInstantEffect() {
         if (!this.effects.isEmpty()) {
-            Iterator iterator = this.effects.iterator();
-            while (iterator.hasNext()) {
-                StatusEffectInstance statusEffectInstance = (StatusEffectInstance) iterator.next();
-                if (((StatusEffect) statusEffectInstance.getEffectType().value()).isInstant()) {
+            for (StatusEffectInstance statusEffectInstance : this.effects) {
+                if ( statusEffectInstance.getEffectType().value().isInstant()) {
                     return true;
                 }
             }

@@ -1,0 +1,6 @@
+{
+  "type":"gekosmagic:elixir",
+  "from":"gekosmagic:awkward",
+  "essence":"gekosmagic:shiny",
+  "to":"gekosmagic:awkward_healing"
+}

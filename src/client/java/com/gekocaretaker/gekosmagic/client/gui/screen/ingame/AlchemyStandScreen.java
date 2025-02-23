@@ -3,7 +3,7 @@ package com.gekocaretaker.gekosmagic.client.gui.screen.ingame;
 import com.gekocaretaker.gekosmagic.Gekosmagic;
 import com.gekocaretaker.gekosmagic.elixir.EssenceContainer;
 import com.gekocaretaker.gekosmagic.network.EssenceIndexPayload;
-import com.gekocaretaker.gekosmagic.resource.EssenceDataLoader;
+import com.gekocaretaker.gekosmagic.resource.EssenceAssetLoader;
 import com.gekocaretaker.gekosmagic.screen.AlchemyStandScreenHandler;
 import com.gekocaretaker.gekosmagic.util.Quadruple;
 import net.fabricmc.api.EnvType;
@@ -27,13 +27,10 @@ import java.util.List;
 @Environment(EnvType.CLIENT)
 public class AlchemyStandScreen extends HandledScreen<AlchemyStandScreenHandler> {
     private static final Identifier FUEL_LENGTH_TEXTURE = Identifier.ofVanilla("container/brewing_stand/fuel_length");
-    //private static final Identifier BREW_PROGRESS_TEXTURE = Identifier.ofVanilla("container/brewing_stand/brew_progress");
     private static final Identifier BUBBLES_TEXTURE = Identifier.ofVanilla("container/brewing_stand/bubbles");
     private static final Identifier ESSENCE_SLOT_TEXTURE = Gekosmagic.identify("container/alchemy_stand/essence_slot");
     private static final Identifier ESSENCE_SELECTED_TEXTURE = Gekosmagic.identify("container/alchemy_stand/essence_selected");
     private static final Identifier ESSENCE_HIGHLIGHTED_TEXTURE = Gekosmagic.identify("container/alchemy_stand/essence_highlighted");
-    private static final Identifier ESSENCE_CONTAINER_TEXTURE = Gekosmagic.identify("container/alchemy_stand/essence_container");
-    private static final Identifier ESSENCE_CONTAINER_FILL_TEXTURE = Gekosmagic.identify("container/alchemy_stand/essence_container_fill");
     private static final Identifier SCROLLER_TEXTURE = Gekosmagic.identify("container/alchemy_stand/scroller");
     private static final Identifier SCROLLER_DISABLED_TEXTURE = Gekosmagic.identify("container/alchemy_stand/scroller_disabled");
     private static final Identifier TEXTURE = Gekosmagic.identify("textures/gui/container/alchemy_stand.png");
@@ -51,13 +48,12 @@ public class AlchemyStandScreen extends HandledScreen<AlchemyStandScreenHandler>
     private static final int ESSENCE_LIST_OFFSET_Y = 17;
 
     private float scrollAmount;
-    private int scrollOffset;
+    private int scrollOffset; // I don't know why I am using this, but I am going to keep it just in case.
     private boolean scrollbarClicked;
     private int visibleTopRow;
 
     public AlchemyStandScreen(AlchemyStandScreenHandler handler, PlayerInventory inventory, Text tittle) {
         super(handler, inventory, tittle);
-        handler.setInventoryChangeListener(this::onInventoryChanged);
     }
 
     @Override
@@ -92,7 +88,7 @@ public class AlchemyStandScreen extends HandledScreen<AlchemyStandScreenHandler>
         }
 
         // Scroll
-        int scrollPos = (int) (35.0F/*was 41*/ * this.scrollAmount);
+        int scrollPos = (int) (33.0F * this.scrollAmount);
         Identifier scrollIdTexture = this.shouldScroll() ? SCROLLER_TEXTURE : SCROLLER_DISABLED_TEXTURE;
         context.drawGuiTexture(scrollIdTexture, i + SCROLLBAR_OFFSET_X, j + SCROLLBAR_OFFSET_Y + scrollPos, SCROLLBAR_WIDTH, SCROLLBAR_HEIGHT);
         DiffuseLighting.disableGuiDepthLighting();
@@ -129,13 +125,20 @@ public class AlchemyStandScreen extends HandledScreen<AlchemyStandScreenHandler>
         DiffuseLighting.enableGuiDepthLighting();
 
         // Brewing
+        int brewingTexturePosX = i + 17;
+        int brewingTexturePosY = j + 50;
+        int brewingTextureSize = EssenceAssetLoader.ESSENCE_CONTAINER_TEXTURE_SIZE;
+        context.drawTexture(EssenceAssetLoader.ESSENCE_CONTAINER_TEXTURE, brewingTexturePosX, brewingTexturePosY, 16, 16, 0, 0, brewingTextureSize, brewingTextureSize, brewingTextureSize, brewingTextureSize);
         int m = this.handler.getBrewTime();
         if (m > 0) {
             int n = (int) (28.0F * (1.0F - (float) m / 400.0F));
-            /*if (n > 0) {
-                context.drawGuiTexture(BREW_PROGRESS_TEXTURE, 9, 28, 0, 0, i + 97, j + 16, 9, n);
-            }*/
+            if (n > 0) {
+                Quadruple<Identifier, Integer, Identifier, Integer> textures = EssenceAssetLoader.getTexturesByEssence(this.handler.getEssences().get(this.handler.getSelectedIndex()).getEssence());
+                int visible = MathHelper.floor(MathHelper.clamp((10 * (400 - m) + 400 - 1) / 400, 0, 10));
+                context.drawTexture(textures.getThird(), brewingTexturePosX + 3, brewingTexturePosY + 3 + 10 - visible, 10, visible, 0, textures.getFourth() - visible, textures.getFourth(), visible, textures.getFourth(), textures.getFourth());
+            }
 
+            // Bubbles
             n = BUBBLES_PROGRESS[m / 2 % 7];
             if (n > 0) {
                 context.drawGuiTexture(BUBBLES_TEXTURE, 12, 29, 0, 29 - n, i + 58, j + 14 + 29 - n, 12, n);
@@ -144,43 +147,16 @@ public class AlchemyStandScreen extends HandledScreen<AlchemyStandScreenHandler>
     }
 
     private void drawEssenceOrb(DrawContext context, EssenceContainer container, int x, int y) {
-        Quadruple<Identifier, Integer, Identifier, Integer> textures = EssenceDataLoader.getTexturesByEssence(container.getEssence());
+        Quadruple<Identifier, Integer, Identifier, Integer> textures = EssenceAssetLoader.getTexturesByEssence(container.getEssence());
         int sizeA = textures.getSecond();
         int sizeB = textures.getFourth();
 
         context.drawTexture(textures.getFirst(), x, y, 16, 16, 0, 0, sizeA, sizeA, sizeA, sizeA);
         int count = container.getCount();
-        int visible = MathHelper.floor(MathHelper.clamp((10 * count + 100 - 1) / 100, 0, 10));
+        int maxCount = container.getLimit();
+        int visible = MathHelper.floor(MathHelper.clamp((10 * count + maxCount - 1) / maxCount, 0, 10));
         if (visible > 0) {
             context.drawTexture(textures.getThird(), x + 3, y + 3 + 10 - visible, 10, visible, 0, sizeB - visible, sizeB, visible, sizeB, sizeB);
-        }
-    }
-
-    private void renderEssenceContainerBackground(DrawContext context, int mouseX, int mouseY, int x, int y, int scrollOffset) {
-        for (int i = this.scrollOffset; i < scrollOffset && i < this.handler.getEssences().size(); i++) {
-            int j = i - this.scrollOffset;
-            int k = x + j % ESSENCE_LIST_ROWS * ESSENCE_ENTRY_SIZE;
-            int l = j / ESSENCE_LIST_COLUMNS;
-            int m = y + l * ESSENCE_ENTRY_SIZE + 2;
-            Identifier identifier;
-            if (i == this.handler.getSelectedIndex()) {
-                identifier = ESSENCE_SELECTED_TEXTURE;
-            } else if (mouseX >= k && mouseY >= m & mouseX < k + ESSENCE_ENTRY_SIZE && mouseY < m + ESSENCE_ENTRY_SIZE) {
-                identifier = ESSENCE_HIGHLIGHTED_TEXTURE;
-            } else {
-                identifier = ESSENCE_SLOT_TEXTURE;
-            }
-            context.drawGuiTexture(identifier, k, m - 1, ESSENCE_ENTRY_SIZE, ESSENCE_ENTRY_SIZE);
-        }
-    }
-
-    private void renderEssenceContainerIcons(DrawContext context, int x, int y, int scrollOffset) {
-        for (int i = this.scrollOffset; i < scrollOffset && i < this.handler.getEssences().size(); i++) {
-            int j = i - this.scrollOffset;
-            int k = x + j % ESSENCE_LIST_ROWS * ESSENCE_ENTRY_SIZE;
-            int l = j / ESSENCE_LIST_COLUMNS;
-            int m = y + l * ESSENCE_ENTRY_SIZE + 2;
-            drawEssenceOrb(context, this.handler.getEssences().get(i), k, m);
         }
     }
 
@@ -243,7 +219,7 @@ public class AlchemyStandScreen extends HandledScreen<AlchemyStandScreenHandler>
     }
 
     protected int getMaxScroll() {
-        return (this.handler.getEssences().size() + ESSENCE_LIST_ROWS - 1) / ESSENCE_LIST_COLUMNS - 3;
+        return (this.handler.getEssences().size() + ESSENCE_LIST_ROWS - 2) / ESSENCE_LIST_COLUMNS - 3;
     }
 
     @Override
@@ -277,12 +253,5 @@ public class AlchemyStandScreen extends HandledScreen<AlchemyStandScreenHandler>
 
     public static List<Text> getTooltipFromEssence(MinecraftClient client, EssenceContainer container) {
         return container.getTooltip(Item.TooltipContext.create(client.world), client.player, client.options.advancedItemTooltips ? TooltipType.Default.ADVANCED : TooltipType.Default.BASIC);
-    }
-
-    private void onInventoryChanged() {
-        if (this.visibleTopRow >= this.getRows()) {
-            this.visibleTopRow = 0;
-            this.scrollAmount = 0.0F;
-        }
     }
 }

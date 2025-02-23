@@ -5,9 +5,11 @@ import com.gekocaretaker.gekosmagic.block.AlchemyStandBlock;
 import com.gekocaretaker.gekosmagic.elixir.Essence;
 import com.gekocaretaker.gekosmagic.elixir.EssenceContainer;
 import com.gekocaretaker.gekosmagic.elixir.Essences;
+import com.gekocaretaker.gekosmagic.item.ElixirItem;
 import com.gekocaretaker.gekosmagic.item.ModItems;
 import com.gekocaretaker.gekosmagic.network.EssenceContainerPayload;
 import com.gekocaretaker.gekosmagic.recipe.AlchemyRecipeRegistry;
+import com.gekocaretaker.gekosmagic.registry.ModRegistries;
 import com.gekocaretaker.gekosmagic.screen.AlchemyStandScreenHandler;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -21,7 +23,11 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.network.listener.ClientPlayPacketListener;
+import net.minecraft.network.packet.Packet;
+import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
 import net.minecraft.registry.RegistryWrapper;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.screen.PropertyDelegate;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -46,7 +52,6 @@ public class AlchemyStandBlockEntity extends LockableContainerBlockEntity implem
     public static final int BREW_TIME_PROPERTY_INDEX = 0;
     public static final int FUEL_PROPERTY_INDEX = 1;
     public static final int SELECTED_INDEX_PROPERTY_INDEX = 2;
-    public static final int PROPERTY_COUNT = 2;
     private ArrayList<EssenceContainer> essences;
     private DefaultedList<ItemStack> inventory;
     int brewTime;
@@ -66,9 +71,9 @@ public class AlchemyStandBlockEntity extends LockableContainerBlockEntity implem
             public int get(int index) {
                 int retVal;
                 switch (index) {
-                    case 0 -> retVal = AlchemyStandBlockEntity.this.brewTime;
-                    case 1 -> retVal = AlchemyStandBlockEntity.this.fuel;
-                    case 2 -> retVal = AlchemyStandBlockEntity.this.selectedIndex;
+                    case BREW_TIME_PROPERTY_INDEX -> retVal = AlchemyStandBlockEntity.this.brewTime;
+                    case FUEL_PROPERTY_INDEX -> retVal = AlchemyStandBlockEntity.this.fuel;
+                    case SELECTED_INDEX_PROPERTY_INDEX -> retVal = AlchemyStandBlockEntity.this.selectedIndex;
                     default -> retVal = 0;
                 }
                 return retVal;
@@ -77,9 +82,9 @@ public class AlchemyStandBlockEntity extends LockableContainerBlockEntity implem
             @Override
             public void set(int index, int value) {
                 switch (index) {
-                    case 0 -> AlchemyStandBlockEntity.this.brewTime = value;
-                    case 1 -> AlchemyStandBlockEntity.this.fuel = value;
-                    case 2 -> AlchemyStandBlockEntity.this.selectedIndex = value;
+                    case BREW_TIME_PROPERTY_INDEX -> AlchemyStandBlockEntity.this.brewTime = value;
+                    case FUEL_PROPERTY_INDEX -> AlchemyStandBlockEntity.this.fuel = value;
+                    case SELECTED_INDEX_PROPERTY_INDEX -> AlchemyStandBlockEntity.this.selectedIndex = value;
                 }
             }
 
@@ -124,7 +129,7 @@ public class AlchemyStandBlockEntity extends LockableContainerBlockEntity implem
         }
 
         if (!blockEntity.essences.isEmpty()) {
-            boolean craftingPossible = canCraft(Gekosmagic.alchemyRecipeRegistry, blockEntity.essences.get(blockEntity.selectedIndex), blockEntity.inventory, state);
+            boolean craftingPossible = canCraft(world, blockEntity.essences.get(blockEntity.selectedIndex), blockEntity.inventory, state);
             boolean brewing = blockEntity.brewTime > 0;
             if (brewing) {
                 --blockEntity.brewTime;
@@ -184,10 +189,11 @@ public class AlchemyStandBlockEntity extends LockableContainerBlockEntity implem
                 }
             }
 
-            Pair<Essence, Boolean> ep = Essences.itemIsEssence(inputStack.getItem());
+            Pair<Essence, Boolean> ep = Essences.itemIsEssence(inputStack);
             Essence essence = ep.getLeft();
+            RegistryEntry<Essence> essenceRegistryEntry = ModRegistries.ESSENCE.getEntry(essence);
             if (!essenceContainerExists && ep.getRight()) {
-                blockEntity.essences.add(new EssenceContainer(essence, 1));
+                blockEntity.essences.add(new EssenceContainer(essenceRegistryEntry));
                 inputStack.decrement(1);
 
                 markDirty(world, pos, state);
@@ -216,17 +222,18 @@ public class AlchemyStandBlockEntity extends LockableContainerBlockEntity implem
         return booleans;
     }
 
-    private static boolean canCraft(AlchemyRecipeRegistry alchemyRecipeRegistry, EssenceContainer selectedEssenceContainer, DefaultedList<ItemStack> slots, BlockState state) {
-        if (selectedEssenceContainer.isOf(Essences.AIR)) {
+    private static boolean canCraft(World world, EssenceContainer selectedEssenceContainer, DefaultedList<ItemStack> slots, BlockState state) {
+        Essence essence = Essences.AIR;
+        if (selectedEssenceContainer.isOf(essence)) {
             return false;
-        } else if (!alchemyRecipeRegistry.isValidIngredient(selectedEssenceContainer.getEssence())) {
+        } else if (!Gekosmagic.alchemyRecipeRegistry.isValidIngredient(world, selectedEssenceContainer.getEssence())) {
             return false;
         } else if (!state.get(AlchemyStandBlock.POWERED)) {
             return false;
         } else {
             for (int i = 0; i < 3; ++i) {
                 ItemStack itemStack = slots.get(i);
-                if (!itemStack.isEmpty() && alchemyRecipeRegistry.hasRecipe(itemStack, selectedEssenceContainer.getEssence())) {
+                if (!itemStack.isEmpty() && Gekosmagic.alchemyRecipeRegistry.hasRecipe(world, itemStack, selectedEssenceContainer.getEssence())) {
                     return true;
                 }
             }
@@ -240,17 +247,18 @@ public class AlchemyStandBlockEntity extends LockableContainerBlockEntity implem
         EssenceContainer essenceContainer = essences.get(selectedIndex);
 
         for (int i = 0; i < 3; i++) {
-            slots.set(i, alchemyRecipeRegistry.craft(essenceContainer.getEssence(), slots.get(i)));
+            slots.set(i, alchemyRecipeRegistry.craft(world, essenceContainer.getEssence(), slots.get(i)));
         }
 
         essenceContainer.decrement(1);
-
         if (!essences.isEmpty()) {
             for (ServerPlayerEntity player : PlayerLookup.tracking((ServerWorld) world, pos)) {
                 ServerPlayNetworking.send(player, new EssenceContainerPayload(essences, pos));
             }
         }
 
+        world.getBlockEntity(pos).markDirty();
+        world.updateListeners(pos, world.getBlockState(pos), world.getBlockState(pos), 0);
         world.syncWorldEvent(1035, pos, 0);
     }
 
@@ -295,19 +303,11 @@ public class AlchemyStandBlockEntity extends LockableContainerBlockEntity implem
     @Override
     public boolean isValid(int slot, ItemStack stack) {
         if (slot == INPUT_SLOT_INDEX) {
-            return Essences.itemIsEssence(stack.getItem()).getRight();
+            return Essences.itemIsEssence(stack).getRight();
         } else if (slot == FUEL_SLOT_INDEX) {
             return stack.isOf(Items.BLAZE_POWDER);
         } else {
-            return (stack.isOf(ModItems.ELIXIR) ||
-                    stack.isOf(ModItems.SPLASH_ELIXIR) ||
-                    stack.isOf(ModItems.LINGERING_ELIXIR) ||
-                    stack.isOf(ModItems.BUTTERED_ELIXIR) ||
-                    stack.isOf(ModItems.CLEAR_ELIXIR) ||
-                    stack.isOf(ModItems.UNINTERESTING_ELIXIR) ||
-                    stack.isOf(ModItems.BLAND_ELIXIR) ||
-                    stack.isOf(ModItems.DIFFUSING_ELIXIR) ||
-                    stack.isOf(ModItems.GLASS_PHIAL)) && ((this.getStack(slot).getCount() < this.getStack(slot).getMaxCount()) || this.getStack(slot).isEmpty());
+            return stack.getItem() instanceof ElixirItem && ((this.getStack(slot).getCount() < this.getStack(slot).getMaxCount()) || this.getStack(slot).isEmpty());
         }
     }
 
@@ -343,5 +343,16 @@ public class AlchemyStandBlockEntity extends LockableContainerBlockEntity implem
     @Override
     public BlockPos getScreenOpeningData(ServerPlayerEntity serverPlayerEntity) {
         return this.pos;
+    }
+
+    @Nullable
+    @Override
+    public Packet<ClientPlayPacketListener> toUpdatePacket() {
+        return BlockEntityUpdateS2CPacket.create(this);
+    }
+
+    @Override
+    public NbtCompound toInitialChunkDataNbt(RegistryWrapper.WrapperLookup registryLookup) {
+        return createNbt(registryLookup);
     }
 }

@@ -1,0 +1,6 @@
+{
+  "type": "gekosmagic:item_alchemy",
+  "from": "gekosmagic:splash_elixir",
+  "essence": "gekosmagic:lingering",
+  "to": "gekosmagic:lingering_elixir"
+}

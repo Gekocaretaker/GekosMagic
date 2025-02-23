@@ -1,0 +1,6 @@
+{
+  "type":"gekosmagic:elixir",
+  "from":"gekosmagic:mundane",
+  "essence":"gekosmagic:evil",
+  "to":"gekosmagic:mundane_absolutely_not"
+}

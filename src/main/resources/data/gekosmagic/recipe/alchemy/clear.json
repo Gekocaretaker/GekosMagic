@@ -1,0 +1,6 @@
+{
+  "type":"gekosmagic:item_alchemy",
+  "from":"gekosmagic:uninteresting_elixir",
+  "essence":"gekosmagic:peace",
+  "to":"gekosmagic:clear_elixir"
+}

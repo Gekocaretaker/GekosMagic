@@ -1,0 +1,6 @@
+{
+  "type": "gekosmagic:elixir",
+  "from": "gekosmagic:water",
+  "essence": "gekosmagic:nether",
+  "to": "gekosmagic:awkward"
+}

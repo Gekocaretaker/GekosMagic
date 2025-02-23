@@ -11,7 +11,7 @@ public class ModLootFunctionTypes {
     public static final LootFunctionType<SetElixirLootFunction> SET_ELIXIR = register("set_elixir", SetElixirLootFunction.CODEC);
 
     private static <T extends LootFunction>LootFunctionType<T> register(String id, MapCodec<T> codec) {
-        return (LootFunctionType<T>) Registry.register(Registries.LOOT_FUNCTION_TYPE, Gekosmagic.identify(id), new LootFunctionType<>(codec));
+        return Registry.register(Registries.LOOT_FUNCTION_TYPE, Gekosmagic.identify(id), new LootFunctionType<>(codec));
     }
 
     public static void init() {}

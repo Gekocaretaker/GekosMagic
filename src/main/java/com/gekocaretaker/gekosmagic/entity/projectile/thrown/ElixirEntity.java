@@ -11,11 +11,9 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.CampfireBlock;
 import net.minecraft.entity.*;
 import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.passive.AxolotlEntity;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.thrown.ThrownItemEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -35,9 +33,7 @@ import java.util.List;
 import java.util.function.Predicate;
 
 public class ElixirEntity extends ThrownItemEntity implements FlyingItemEntity {
-    public static final Predicate<LivingEntity> AFFECTED_BY_WATER = (entity) -> {
-        return entity.hurtByWater() || entity.isOnFire();
-    };
+    public static final Predicate<LivingEntity> AFFECTED_BY_WATER = (entity) -> entity.hurtByWater() || entity.isOnFire();
 
     public ElixirEntity(EntityType<? extends ElixirEntity> entityType, World world) {
         super(entityType, world);
@@ -72,10 +68,8 @@ public class ElixirEntity extends ThrownItemEntity implements FlyingItemEntity {
             if (elixirContentsComponent.matches(Elixirs.WATER)) {
                 this.extinguishFire(blockPos1);
                 this.extinguishFire(blockPos1.offset(direction.getOpposite()));
-                Iterator iterator = Direction.Type.HORIZONTAL.iterator();
 
-                while (iterator.hasNext()) {
-                    Direction direction1 = (Direction) iterator.next();
+                for (Direction direction1 : Direction.Type.HORIZONTAL) {
                     this.extinguishFire(blockPos1.offset(direction1));
                 }
             }
@@ -107,10 +101,8 @@ public class ElixirEntity extends ThrownItemEntity implements FlyingItemEntity {
     private void applyWater() {
         Box box = this.getBoundingBox().expand(4.0, 2.0, 4.0);
         List<LivingEntity> list = this.getWorld().getEntitiesByClass(LivingEntity.class, box, AFFECTED_BY_WATER);
-        Iterator iterator = list.iterator();
 
-        while (iterator.hasNext()) {
-            LivingEntity livingEntity = (LivingEntity) iterator.next();
+        for (LivingEntity livingEntity : list) {
             double d = this.squaredDistanceTo(livingEntity);
             if (d < 16.0) {
                 if (livingEntity.hurtByWater()) {
@@ -124,10 +116,8 @@ public class ElixirEntity extends ThrownItemEntity implements FlyingItemEntity {
         }
 
         List<AxolotlEntity> list1 = this.getWorld().getNonSpectatingEntities(AxolotlEntity.class, box);
-        Iterator iterator1 = list1.iterator();
 
-        while (iterator1.hasNext()) {
-            AxolotlEntity axolotlEntity = (AxolotlEntity) iterator1.next();
+        for (AxolotlEntity axolotlEntity : list1) {
             axolotlEntity.hydrateFromPotion();
         }
     }
@@ -137,7 +127,7 @@ public class ElixirEntity extends ThrownItemEntity implements FlyingItemEntity {
         List<LivingEntity> list = this.getWorld().getNonSpectatingEntities(LivingEntity.class, box);
         if (!list.isEmpty()) {
             Entity entity1 = this.getEffectCause();
-            Iterator iterator = list.iterator();
+            Iterator<LivingEntity> iterator = list.iterator();
 
             while (true) {
                 LivingEntity livingEntity;
@@ -148,7 +138,7 @@ public class ElixirEntity extends ThrownItemEntity implements FlyingItemEntity {
                             return;
                         }
 
-                        livingEntity = (LivingEntity) iterator.next();
+                        livingEntity = iterator.next();
                     } while (!livingEntity.isAffectedBySplashPotions());
 
                     d = this.squaredDistanceTo(livingEntity);
@@ -161,17 +151,12 @@ public class ElixirEntity extends ThrownItemEntity implements FlyingItemEntity {
                     e = 1.0 - Math.sqrt(d) / 4.0;
                 }
 
-                Iterator iterator1 = effects.iterator();
-
-                while (iterator1.hasNext()) {
-                    StatusEffectInstance statusEffectInstance = (StatusEffectInstance) iterator1.next();
+                for (StatusEffectInstance statusEffectInstance : effects) {
                     RegistryEntry<StatusEffect> registryEntry = statusEffectInstance.getEffectType();
                     if (registryEntry.value().isInstant()) {
                         registryEntry.value().applyInstantEffect(this, this.getOwner(), livingEntity, statusEffectInstance.getAmplifier(), e);
                     } else {
-                        int i = statusEffectInstance.mapDuration((duration) -> {
-                            return (int) (e * (double) duration + 0.5);
-                        });
+                        int i = statusEffectInstance.mapDuration((duration) -> (int) (e * (double) duration + 0.5));
                         StatusEffectInstance statusEffectInstance1 = new StatusEffectInstance(registryEntry, i, statusEffectInstance.getAmplifier(), statusEffectInstance.isAmbient(), statusEffectInstance.shouldShowParticles());
                         if (!statusEffectInstance1.isDurationBelow(20)) {
                             livingEntity.addStatusEffect(statusEffectInstance1, entity1);
@@ -208,9 +193,9 @@ public class ElixirEntity extends ThrownItemEntity implements FlyingItemEntity {
         if (blockState.isIn(BlockTags.FIRE)) {
             this.getWorld().breakBlock(pos, false, this);
         } else if (AbstractCandleBlock.isLitCandle(blockState)) {
-            AbstractCandleBlock.extinguish((PlayerEntity) null, blockState, this.getWorld(), pos);
+            AbstractCandleBlock.extinguish(null, blockState, this.getWorld(), pos);
         } else if (CampfireBlock.isLitCampfire(blockState)) {
-            this.getWorld().syncWorldEvent((PlayerEntity) null, 1009, pos, 0);
+            this.getWorld().syncWorldEvent(null, 1009, pos, 0);
             CampfireBlock.extinguish(this.getOwner(), this.getWorld(), pos, blockState);
             this.getWorld().setBlockState(pos, blockState.with(CampfireBlock.LIT, false));
         }

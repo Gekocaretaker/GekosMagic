@@ -3,7 +3,7 @@ package com.gekocaretaker.gekosmagic.compat.emi;
 import com.gekocaretaker.gekosmagic.Gekosmagic;
 import com.gekocaretaker.gekosmagic.elixir.Essence;
 import com.gekocaretaker.gekosmagic.elixir.EssenceContainer;
-import com.gekocaretaker.gekosmagic.resource.EssenceDataLoader;
+import com.gekocaretaker.gekosmagic.resource.EssenceAssetLoader;
 import com.gekocaretaker.gekosmagic.util.Quadruple;
 import dev.emi.emi.api.recipe.EmiRecipe;
 import dev.emi.emi.api.recipe.EmiRecipeCategory;
@@ -72,7 +72,7 @@ public class AlchemyEmiRecipe implements EmiRecipe {
         widgetHolder.addSlot(BLAZE_POWDER, 0, 2).drawBack(false);
         widgetHolder.addSlot(this.from, 39, 36).drawBack(false);
 
-        Quadruple<Identifier, Integer, Identifier, Integer> essenceTextureData = EssenceDataLoader.getTexturesByEssence(this.essence);
+        Quadruple<Identifier, Integer, Identifier, Integer> essenceTextureData = EssenceAssetLoader.getTexturesByEssence(this.essence);
         int containerSize = essenceTextureData.getSecond();
         int essenceSize = essenceTextureData.getFourth();
         EssenceContainer essenceContainer = new EssenceContainer(this.essence, 1);

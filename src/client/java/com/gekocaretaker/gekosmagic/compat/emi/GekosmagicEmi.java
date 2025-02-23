@@ -2,27 +2,28 @@ package com.gekocaretaker.gekosmagic.compat.emi;
 
 import com.gekocaretaker.gekosmagic.Gekosmagic;
 import com.gekocaretaker.gekosmagic.block.ModBlocks;
-import com.gekocaretaker.gekosmagic.component.ModDataComponentTypes;
 import com.gekocaretaker.gekosmagic.component.type.ElixirContentsComponent;
 import com.gekocaretaker.gekosmagic.elixir.Elixir;
+import com.gekocaretaker.gekosmagic.elixir.Elixirs;
 import com.gekocaretaker.gekosmagic.item.ModItems;
-import com.gekocaretaker.gekosmagic.recipe.alchemy.AlchemyAdvancedRecipe;
-import com.gekocaretaker.gekosmagic.recipe.alchemy.AlchemyCustomRecipe;
-import com.gekocaretaker.gekosmagic.recipe.alchemy.AlchemyElixirRecipe;
-import com.gekocaretaker.gekosmagic.recipe.alchemy.AlchemyItemRecipe;
+import com.gekocaretaker.gekosmagic.recipe.*;
 import com.gekocaretaker.gekosmagic.registry.ModRegistries;
 import dev.emi.emi.api.EmiPlugin;
 import dev.emi.emi.api.EmiRegistry;
 import dev.emi.emi.api.recipe.EmiCraftingRecipe;
 import dev.emi.emi.api.recipe.EmiRecipeCategory;
+import dev.emi.emi.api.recipe.EmiWorldInteractionRecipe;
 import dev.emi.emi.api.render.EmiTexture;
 import dev.emi.emi.api.stack.Comparison;
 import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.fluid.Fluids;
+import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.recipe.Ingredient;
+import net.minecraft.recipe.RecipeEntry;
 import net.minecraft.util.Identifier;
 
 import java.util.ArrayList;
@@ -41,7 +42,7 @@ public class GekosmagicEmi implements EmiPlugin {
 
         emiRegistry.addWorkstation(ALCHEMY_CATEGORY, WORKSTATION);
 
-        Comparison elixirComparison = Comparison.compareData(stack -> stack.get(ModDataComponentTypes.ELIXIR_CONTENTS));
+        Comparison elixirComparison = Comparison.compareComponents();
 
         emiRegistry.setDefaultComparison(ModItems.ELIXIR, elixirComparison);
         emiRegistry.setDefaultComparison(ModItems.SPLASH_ELIXIR, elixirComparison);
@@ -63,109 +64,117 @@ public class GekosmagicEmi implements EmiPlugin {
         });
 
         List<Elixir> alreadyCreatedItemConversion = new ArrayList<>();
-        for (AlchemyElixirRecipe recipe : Gekosmagic.alchemyRecipeRegistry.getElixirRecipes()) {
+        for (RecipeEntry<ElixirRecipe> recipe : emiRegistry.getRecipeManager().listAllOfType(ModRecipeTypes.ELIXIR)) {
             emiRegistry.addRecipe(new AlchemyEmiRecipe(
-                    recipe.id().withPrefixedPath("/"),
+                    recipe.id(),
                     EmiIngredient.of(Ingredient.ofStacks(
-                            ElixirContentsComponent.createStack(ModItems.ELIXIR, recipe.from())
+                            ElixirContentsComponent.createStack(ModItems.ELIXIR, recipe.value().from())
                     )),
-                    recipe.ingredient(),
-                    EmiStack.of(ElixirContentsComponent.createStack(ModItems.ELIXIR, recipe.to()))
+                    recipe.value().ingredient().value(),
+                    EmiStack.of(ElixirContentsComponent.createStack(ModItems.ELIXIR, recipe.value().to()))
             ));
-            for (AlchemyItemRecipe itemRecipe : Gekosmagic.alchemyRecipeRegistry.getItemRecipes()) {
-                if (!alreadyCreatedItemConversion.contains(recipe.from().value())) {
+            for (RecipeEntry<ItemAlchemyRecipe> itemRecipe : emiRegistry.getRecipeManager().listAllOfType(ModRecipeTypes.ITEM_ALCHEMY)) {
+                if (!alreadyCreatedItemConversion.contains(recipe.value().from().value())) {
                     emiRegistry.addRecipe(new AlchemyEmiRecipe(
-                            recipe.id().withPrefixedPath("/").withSuffixedPath("_to_" + itemRecipe.id().getPath()),
+                            recipe.id().withSuffixedPath("_to_" + itemRecipe.id().getPath()),
                             EmiIngredient.of(Ingredient.ofStacks(
-                                    ElixirContentsComponent.createStack(itemRecipe.from().value(), recipe.from())
+                                    ElixirContentsComponent.createStack(itemRecipe.value().from().value(), recipe.value().from())
                             )),
-                            itemRecipe.ingredient(),
-                            EmiStack.of(ElixirContentsComponent.createStack(itemRecipe.to().value(), recipe.from()))
+                            itemRecipe.value().ingredient().value(),
+                            EmiStack.of(ElixirContentsComponent.createStack(itemRecipe.value().to().value(), recipe.value().from()))
                     ));
                 }
                 emiRegistry.addRecipe(new AlchemyEmiRecipe(
-                        recipe.id().withPrefixedPath("/").withSuffixedPath("_as_" + itemRecipe.id().getPath()),
+                        recipe.id().withSuffixedPath("_as_" + itemRecipe.id().getPath()),
                         EmiIngredient.of(Ingredient.ofStacks(
-                                ElixirContentsComponent.createStack(itemRecipe.to().value(), recipe.from())
+                                ElixirContentsComponent.createStack(itemRecipe.value().to().value(), recipe.value().from())
                         )),
-                        recipe.ingredient(),
-                        EmiStack.of(ElixirContentsComponent.createStack(itemRecipe.to().value(), recipe.to()))
+                        recipe.value().ingredient().value(),
+                        EmiStack.of(ElixirContentsComponent.createStack(itemRecipe.value().to().value(), recipe.value().to()))
                 ));
             }
-            if (!alreadyCreatedItemConversion.contains(recipe.from().value())) {
-                alreadyCreatedItemConversion.add(recipe.from().value());
+            if (!alreadyCreatedItemConversion.contains(recipe.value().from().value())) {
+                alreadyCreatedItemConversion.add(recipe.value().from().value());
             }
         }
 
         alreadyCreatedItemConversion.clear();
-        for (AlchemyCustomRecipe recipe: Gekosmagic.alchemyRecipeRegistry.getCustomRecipes()) {
+        for (RecipeEntry<BasicAlchemyRecipe> recipe: emiRegistry.getRecipeManager().listAllOfType(ModRecipeTypes.BASIC_ALCHEMY)) {
             emiRegistry.addRecipe(new AlchemyEmiRecipe(
-                    recipe.id().withPrefixedPath("/"),
+                    recipe.id(),
                     EmiIngredient.of(Ingredient.ofStacks(
-                            ElixirContentsComponent.createStack(ModItems.ELIXIR, recipe.from())
+                            ElixirContentsComponent.createStack(ModItems.ELIXIR, recipe.value().from())
                     )),
-                    recipe.ingredient(),
-                    EmiStack.of(ElixirContentsComponent.createStack(ModItems.ELIXIR, recipe.contents()))
+                    recipe.value().ingredient().value(),
+                    EmiStack.of(ElixirContentsComponent.createStack(ModItems.ELIXIR, recipe.value().to(), AlchemyRecipeRegistry.makeTranslationKey(new ItemStack(ModItems.ELIXIR), recipe.value().translation())))
             ));
-            for (AlchemyItemRecipe itemRecipe : Gekosmagic.alchemyRecipeRegistry.getItemRecipes()) {
-                if (!alreadyCreatedItemConversion.contains(recipe.from().value())) {
+            for (RecipeEntry<ItemAlchemyRecipe> itemRecipe : emiRegistry.getRecipeManager().listAllOfType(ModRecipeTypes.ITEM_ALCHEMY)) {
+                if (!alreadyCreatedItemConversion.contains(recipe.value().from().value())) {
                     emiRegistry.addRecipe(new AlchemyEmiRecipe(
-                            recipe.id().withPrefixedPath("/").withSuffixedPath("_to_" + itemRecipe.id().getPath()),
+                            recipe.id().withSuffixedPath("_to_" + itemRecipe.id().getPath()),
                             EmiIngredient.of(Ingredient.ofStacks(
-                                    ElixirContentsComponent.createStack(itemRecipe.from().value(), recipe.from())
+                                    ElixirContentsComponent.createStack(itemRecipe.value().from().value(), recipe.value().from())
                             )),
-                            itemRecipe.ingredient(),
-                            EmiStack.of(ElixirContentsComponent.createStack(itemRecipe.to().value(), recipe.from()))
+                            itemRecipe.value().ingredient().value(),
+                            EmiStack.of(ElixirContentsComponent.createStack(itemRecipe.value().to().value(), recipe.value().from(), AlchemyRecipeRegistry.makeTranslationKey(new ItemStack(itemRecipe.value().to().value()), recipe.value().translation())))
                     ));
                 }
                 emiRegistry.addRecipe(new AlchemyEmiRecipe(
-                        recipe.id().withPrefixedPath("/").withSuffixedPath("_as_" + itemRecipe.id().getPath()),
+                        recipe.id().withSuffixedPath("_as_" + itemRecipe.id().getPath()),
                         EmiIngredient.of(Ingredient.ofStacks(
-                                ElixirContentsComponent.createStack(itemRecipe.to().value(), recipe.from())
+                                ElixirContentsComponent.createStack(itemRecipe.value().to().value(), recipe.value().from())
                         )),
-                        recipe.ingredient(),
-                        EmiStack.of(ElixirContentsComponent.createStack(itemRecipe.to().value(), recipe.contents()))
+                        recipe.value().ingredient().value(),
+                        EmiStack.of(ElixirContentsComponent.createStack(itemRecipe.value().to().value(), recipe.value().to(), AlchemyRecipeRegistry.makeTranslationKey(new ItemStack(itemRecipe.value().to().value()), recipe.value().translation())))
                 ));
             }
-            if (!alreadyCreatedItemConversion.contains(recipe.from().value())) {
-                alreadyCreatedItemConversion.add(recipe.from().value());
+            if (!alreadyCreatedItemConversion.contains(recipe.value().from().value())) {
+                alreadyCreatedItemConversion.add(recipe.value().from().value());
             }
         }
 
         alreadyCreatedItemConversion.clear();
         List<ElixirContentsComponent> alreadyCreatedItemConversion2 = new ArrayList<>();
-        for (AlchemyAdvancedRecipe recipe : Gekosmagic.alchemyRecipeRegistry.getAdvancedRecipes()) {
+        for (RecipeEntry<AdvancedAlchemyRecipe> recipe : emiRegistry.getRecipeManager().listAllOfType(ModRecipeTypes.ADVANCED_ALCHEMY)) {
             emiRegistry.addRecipe(new AlchemyEmiRecipe(
-                    recipe.id().withPrefixedPath("/"),
+                    recipe.id(),
                     EmiIngredient.of(Ingredient.ofStacks(
-                            ElixirContentsComponent.createStack(ModItems.ELIXIR, recipe.fromContents())
+                            ElixirContentsComponent.createStack(ModItems.ELIXIR, recipe.value().from(), AlchemyRecipeRegistry.makeTranslationKey(new ItemStack(ModItems.ELIXIR), recipe.value().requiredTranslation()))
                     )),
-                    recipe.ingredient(),
-                    EmiStack.of(ElixirContentsComponent.createStack(ModItems.ELIXIR, recipe.toContents()))
+                    recipe.value().ingredient().value(),
+                    EmiStack.of(ElixirContentsComponent.createStack(ModItems.ELIXIR, recipe.value().to(), AlchemyRecipeRegistry.makeTranslationKey(new ItemStack(ModItems.ELIXIR), recipe.value().translation())))
             ));
-            for (AlchemyItemRecipe itemRecipe : Gekosmagic.alchemyRecipeRegistry.getItemRecipes()) {
-                if (!alreadyCreatedItemConversion2.contains(recipe.fromContents())) {
+            for (RecipeEntry<ItemAlchemyRecipe> itemRecipe : emiRegistry.getRecipeManager().listAllOfType(ModRecipeTypes.ITEM_ALCHEMY)) {
+                if (!alreadyCreatedItemConversion2.contains(recipe.value().from())) {
                     emiRegistry.addRecipe(new AlchemyEmiRecipe(
-                            recipe.id().withPrefixedPath("/").withSuffixedPath("_to_" + itemRecipe.id().getPath()),
+                            recipe.id().withSuffixedPath("_to_" + itemRecipe.id().getPath()),
                             EmiIngredient.of(Ingredient.ofStacks(
-                                    ElixirContentsComponent.createStack(itemRecipe.from().value(), recipe.fromContents())
+                                    ElixirContentsComponent.createStack(itemRecipe.value().from().value(), recipe.value().from(), AlchemyRecipeRegistry.makeTranslationKey(new ItemStack(itemRecipe.value().from().value()), recipe.value().requiredTranslation()))
                             )),
-                            itemRecipe.ingredient(),
-                            EmiStack.of(ElixirContentsComponent.createStack(itemRecipe.to().value(), recipe.fromContents()))
+                            itemRecipe.value().ingredient().value(),
+                            EmiStack.of(ElixirContentsComponent.createStack(itemRecipe.value().to().value(), recipe.value().to(), AlchemyRecipeRegistry.makeTranslationKey(new ItemStack(itemRecipe.value().to().value()), recipe.value().translation())))
                     ));
                 }
                 emiRegistry.addRecipe(new AlchemyEmiRecipe(
-                        recipe.id().withPrefixedPath("/").withSuffixedPath("_as_" + itemRecipe.id().getPath()),
+                        recipe.id().withSuffixedPath("_as_" + itemRecipe.id().getPath()),
                         EmiIngredient.of(Ingredient.ofStacks(
-                                ElixirContentsComponent.createStack(itemRecipe.to().value(), recipe.fromContents())
+                                ElixirContentsComponent.createStack(itemRecipe.value().to().value(), recipe.value().from(), AlchemyRecipeRegistry.makeTranslationKey(new ItemStack(itemRecipe.value().to().value()), recipe.value().requiredTranslation()))
                         )),
-                        recipe.ingredient(),
-                        EmiStack.of(ElixirContentsComponent.createStack(itemRecipe.to().value(), recipe.toContents()))
+                        recipe.value().ingredient().value(),
+                        EmiStack.of(ElixirContentsComponent.createStack(itemRecipe.value().to().value(), recipe.value().to(), AlchemyRecipeRegistry.makeTranslationKey(new ItemStack(itemRecipe.value().to().value()), recipe.value().translation())))
                 ));
             }
-            if (!alreadyCreatedItemConversion2.contains(recipe.fromContents())) {
-                alreadyCreatedItemConversion2.add(recipe.fromContents());
+            if (!alreadyCreatedItemConversion2.contains(recipe.value().from())) {
+                alreadyCreatedItemConversion2.add(recipe.value().from());
             }
         }
+
+        emiRegistry.addRecipe(EmiWorldInteractionRecipe.builder()
+                .id(Gekosmagic.identify("/world/unique/gekosmagic/phial_of_water"))
+                .leftInput(EmiStack.of(ModItems.GLASS_PHIAL))
+                .rightInput(EmiStack.of(Fluids.WATER), true)
+                .output(EmiStack.of(ElixirContentsComponent.createStack(ModItems.ELIXIR, Elixirs.WATER)))
+                .build()
+        );
     }
 }

@@ -28,9 +28,7 @@ public class GlassVialItem extends Item {
     public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
         ItemStack itemStack = user.getStackInHand(hand);
         BlockHitResult blockHitResult = raycast(world, user, RaycastContext.FluidHandling.SOURCE_ONLY);
-        if (blockHitResult.getType() == HitResult.Type.MISS) {
-            return TypedActionResult.pass(itemStack);
-        } else {
+        if (blockHitResult.getType() != HitResult.Type.MISS) {
             if (blockHitResult.getType() == HitResult.Type.BLOCK) {
                 BlockPos pos = blockHitResult.getBlockPos();
                 if (!world.canPlayerModifyAt(user, pos)) {
@@ -45,7 +43,7 @@ public class GlassVialItem extends Item {
                 }
             }
 
-            return TypedActionResult.pass(itemStack);
         }
+        return TypedActionResult.pass(itemStack);
     }
 }

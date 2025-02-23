@@ -20,6 +20,6 @@ public abstract class CreeperEntityMixin extends HostileEntity {
 
     @Inject(method = "initGoals()V", at = @At("TAIL"))
     protected void gekosmagic$mixInitGoals(CallbackInfo ci) {
-        this.goalSelector.add(3, new FleeEntityWithEffectGoal(((CreeperEntity)(Object)this), PlayerEntity.class, 6.0F, 1.0, 1.2, ModEffects.ABSOLUTELY_NOT));
+        this.goalSelector.add(3, new FleeEntityWithEffectGoal<>(((CreeperEntity)(Object)this), PlayerEntity.class, 6.0F, 1.0, 1.2, ModEffects.ABSOLUTELY_NOT));
     }
 }

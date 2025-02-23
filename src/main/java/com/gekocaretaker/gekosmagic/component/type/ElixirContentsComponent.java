@@ -28,7 +28,6 @@ import net.minecraft.util.Pair;
 import net.minecraft.util.math.ColorHelper;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 public record ElixirContentsComponent(Optional<RegistryEntry<Elixir>> elixir, Optional<Integer> customColor, List<StatusEffectInstance> customEffects) {
@@ -36,9 +35,12 @@ public record ElixirContentsComponent(Optional<RegistryEntry<Elixir>> elixir, Op
     private static final Text NONE_TEXT = Text.translatable("effect.none").formatted(Formatting.GRAY);
     private static final Text MYSTERY_TEXT = Text.translatable("effect.gekosmagic.uninteresting", Formatting.GRAY);
     public static final int EFFECTLESS_COLOR = -13083194;
-    private static final Codec<ElixirContentsComponent> BASE_CODEC = RecordCodecBuilder.create((instance) -> {
-        return instance.group(Elixir.CODEC.optionalFieldOf("elixir").forGetter(ElixirContentsComponent::elixir), Codec.INT.optionalFieldOf("custom_color").forGetter(ElixirContentsComponent::customColor), StatusEffectInstance.CODEC.listOf().optionalFieldOf("custom_effects", List.of()).forGetter(ElixirContentsComponent::customEffects)).apply(instance, ElixirContentsComponent::new);
-    });
+    private static final Codec<ElixirContentsComponent> BASE_CODEC = RecordCodecBuilder.create((instance) ->
+            instance.group(
+                    Elixir.CODEC.optionalFieldOf("elixir").forGetter(ElixirContentsComponent::elixir),
+                    Codec.INT.optionalFieldOf("custom_color").forGetter(ElixirContentsComponent::customColor),
+                    StatusEffectInstance.CODEC.listOf().optionalFieldOf("custom_effects", List.of()).forGetter(ElixirContentsComponent::customEffects)
+            ).apply(instance, ElixirContentsComponent::new));
     public static final Codec<ElixirContentsComponent> CODEC = Codec.withAlternative(BASE_CODEC, Elixir.CODEC, ElixirContentsComponent::new);
     public static final PacketCodec<RegistryByteBuf, ElixirContentsComponent> PACKET_CODEC = PacketCodec.tuple(Elixir.PACKET_CODEC.collect(PacketCodecs::optional), ElixirContentsComponent::elixir, PacketCodecs.INTEGER.collect(PacketCodecs::optional), ElixirContentsComponent::customColor, StatusEffectInstance.PACKET_CODEC.collect(PacketCodecs.toList()), ElixirContentsComponent::customEffects, ElixirContentsComponent::new);
 
@@ -47,22 +49,55 @@ public record ElixirContentsComponent(Optional<RegistryEntry<Elixir>> elixir, Op
     }
 
     public static ItemStack createStack(Item item, RegistryEntry<Elixir> elixir) {
+        return createStack(item, elixir, 1);
+    }
+
+    public static ItemStack createStack(Item item, RegistryEntry<Elixir> elixir, int count) {
         ItemStack itemStack = new ItemStack(item);
         itemStack.set(ModDataComponentTypes.ELIXIR_CONTENTS, new ElixirContentsComponent(elixir));
+        itemStack.setCount(count);
+        return itemStack;
+    }
+
+    public static ItemStack createStack(Item item, RegistryEntry<Elixir> elixir, String translationKey) {
+        return createStack(item, elixir, translationKey, 1);
+    }
+
+    public static ItemStack createStack(Item item, RegistryEntry<Elixir> elixir, String translationKey, int count) {
+        ItemStack itemStack = new ItemStack(item);
+        itemStack.set(ModDataComponentTypes.ELIXIR_CONTENTS, new ElixirContentsComponent(elixir));
+        itemStack.set(DataComponentTypes.ITEM_NAME, Text.translatable(translationKey));
+        itemStack.setCount(count);
         return itemStack;
     }
 
     public static ItemStack createStack(Item item, ElixirContentsComponent contents) {
+        return createStack(item, contents, 1);
+    }
+
+    public static ItemStack createStack(Item item, ElixirContentsComponent contents, int count) {
         ItemStack itemStack = new ItemStack(item);
         itemStack.set(ModDataComponentTypes.ELIXIR_CONTENTS, contents);
+        itemStack.setCount(count);
+        return itemStack;
+    }
+
+    public static ItemStack createStack(Item item, ElixirContentsComponent contents, String translationKey) {
+        return createStack(item, contents, translationKey, 1);
+    }
+
+    public static ItemStack createStack(Item item, ElixirContentsComponent contents, String translationKey, int count) {
+        ItemStack itemStack = new ItemStack(item);
+        itemStack.set(ModDataComponentTypes.ELIXIR_CONTENTS, contents);
+        itemStack.set(DataComponentTypes.ITEM_NAME, Text.translatable(translationKey));
+        itemStack.setCount(count);
         return itemStack;
     }
 
     public static PotionContentsComponent convertToPotionContentsComponent(ElixirContentsComponent contents) {
         List<StatusEffectInstance> effects = new ArrayList<>();
         contents.forEachEffect(effects::add);
-        PotionContentsComponent potionContentsComponent = new PotionContentsComponent(Optional.empty(), Optional.empty(), effects);
-        return potionContentsComponent;
+        return new PotionContentsComponent(Optional.empty(), Optional.empty(), effects);
     }
 
     public static ItemStack createPotionContentsStack(Item item, int count, ElixirContentsComponent contents) {
@@ -89,18 +124,18 @@ public record ElixirContentsComponent(Optional<RegistryEntry<Elixir>> elixir, Op
     }
 
     public void forEachEffect(Consumer<StatusEffectInstance> effectConsumer) {
-        Iterator iterator;
+        Iterator<StatusEffectInstance> iterator;
         StatusEffectInstance statusEffectInstance;
         if (this.elixir.isPresent()) {
             iterator = this.elixir.get().value().getEffects().iterator();
             while(iterator.hasNext()) {
-                statusEffectInstance = (StatusEffectInstance) iterator.next();
+                statusEffectInstance = iterator.next();
                 effectConsumer.accept(new StatusEffectInstance(statusEffectInstance));
             }
         }
         iterator = this.customEffects.iterator();
         while(iterator.hasNext()) {
-            statusEffectInstance = (StatusEffectInstance) iterator.next();
+            statusEffectInstance = iterator.next();
             effectConsumer.accept(new StatusEffectInstance(statusEffectInstance));
         }
     }
@@ -117,7 +152,7 @@ public record ElixirContentsComponent(Optional<RegistryEntry<Elixir>> elixir, Op
     }
 
     public int getColor() {
-        return this.customColor.isPresent() ? this.customColor.get() : getColor(this.getEffects());
+        return this.customColor.orElseGet(() -> getColor(this.getEffects()));
     }
 
     public static int getColor(RegistryEntry<Elixir> elixir) {
@@ -133,10 +168,8 @@ public record ElixirContentsComponent(Optional<RegistryEntry<Elixir>> elixir, Op
         int green = 0;
         int blue = 0;
         int effectCount = 0;
-        Iterator iterator = effects.iterator();
 
-        while (iterator.hasNext()) {
-            StatusEffectInstance statusEffectInstance = (StatusEffectInstance) iterator.next();
+        for (StatusEffectInstance statusEffectInstance : effects) {
             if (statusEffectInstance.shouldShowParticles()) {
                 int color = statusEffectInstance.getEffectType().value().getColor();
                 int amp = statusEffectInstance.getAmplifier() + 1;
@@ -173,16 +206,16 @@ public record ElixirContentsComponent(Optional<RegistryEntry<Elixir>> elixir, Op
         List<Pair<RegistryEntry<EntityAttribute>, EntityAttributeModifier>> list = Lists.newArrayList();
         boolean bl = true;
 
-        Iterator iterator;
+        Iterator<StatusEffectInstance> iterator;
         MutableText mutableText;
-        RegistryEntry registryEntry;
-        for (iterator = effects.iterator(); iterator.hasNext(); textConsumer.accept(mutableText.formatted(((StatusEffect) registryEntry.value()).getCategory().getFormatting()))) {
-            StatusEffectInstance statusEffectInstance = (StatusEffectInstance) iterator.next();
+        RegistryEntry<StatusEffect> registryEntry;
+        for (iterator = effects.iterator(); iterator.hasNext(); textConsumer.accept(mutableText.formatted(registryEntry.value().getCategory().getFormatting()))) {
+            StatusEffectInstance statusEffectInstance = iterator.next();
             bl = false;
             mutableText = Text.translatable(statusEffectInstance.getTranslationKey());
             registryEntry = statusEffectInstance.getEffectType();
-            ((StatusEffect) registryEntry.value()).forEachAttributeModifier(statusEffectInstance.getAmplifier(), (attribute, modifier) -> {
-                list.add(new Pair(attribute, modifier));
+            registryEntry.value().forEachAttributeModifier(statusEffectInstance.getAmplifier(), (attribute, modifier) -> {
+                list.add(new Pair<>(attribute, modifier));
             });
             if (statusEffectInstance.getAmplifier() > 0) {
                 mutableText = Text.translatable("potion.withAmplifier", new Object[]{mutableText, Text.translatable("potion.potency." + statusEffectInstance.getAmplifier())});
@@ -199,10 +232,10 @@ public record ElixirContentsComponent(Optional<RegistryEntry<Elixir>> elixir, Op
         if (!list.isEmpty()) {
             textConsumer.accept(ScreenTexts.EMPTY);
             textConsumer.accept(Text.translatable("potion.whenDrank").formatted(Formatting.DARK_PURPLE));
-            iterator = list.iterator();
+            Iterator<Pair<RegistryEntry<EntityAttribute>, EntityAttributeModifier>> iterator1 = list.iterator();;
 
             while (iterator.hasNext()) {
-                Pair<RegistryEntry<EntityAttribute>, EntityAttributeModifier> pair = (Pair) iterator.next();
+                Pair<RegistryEntry<EntityAttribute>, EntityAttributeModifier> pair = iterator1.next();
                 EntityAttributeModifier entityAttributeModifier = pair.getRight();
                 double d = entityAttributeModifier.value();
                 double e;

@@ -1,0 +1,6 @@
+{
+  "type":"gekosmagic:item_alchemy",
+  "from":"gekosmagic:elixir",
+  "essence":"gekosmagic:gritty",
+  "to":"gekosmagic:uninteresting_elixir"
+}

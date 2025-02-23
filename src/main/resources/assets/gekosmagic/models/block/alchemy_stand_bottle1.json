@@ -1,10 +1,12 @@
 {
     "textures": {
         "particle": "gekosmagic:block/alchemy_stand",
-        "stand": "gekosmagic:block/alchemy_stand"
+        "stand": "gekosmagic:block/alchemy_stand",
+        "overlay": "gekosmagic:block/alchemy_stand_overlay"
     },
     "elements": [
-        {   "from": [ -0.41, 0, 8 ],
+        {
+            "from": [ -0.41, 0, 8 ],
             "to": [ 7.59, 16, 8 ],
             "rotation": {
                 "origin": [ 8, 8, 8 ],
@@ -14,6 +16,19 @@
             "faces": {
                 "north": { "uv": [ 8, 0, 0, 16 ], "texture": "#stand" },
                 "south": { "uv": [ 0, 0, 8, 16 ], "texture": "#stand" }
+            }
+        },
+        {
+            "from": [ -0.41, 0, 8 ],
+            "to": [ 7.59, 16, 8 ],
+            "rotation": {
+                "origin": [ 8, 8, 8 ],
+                "axis": "y",
+                "angle": -45
+            },
+            "faces": {
+                "north": { "uv": [ 8, 0, 0, 16 ], "texture": "#overlay", "tintindex": 2 },
+                "south": { "uv": [ 0, 0, 8, 16 ], "texture": "#overlay", "tintindex": 2 }
             }
         }
     ]

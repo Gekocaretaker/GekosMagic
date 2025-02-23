@@ -1,0 +1,6 @@
+{
+  "type":"gekosmagic:elixir",
+  "from":"gekosmagic:awkward",
+  "essence":"gekosmagic:slimy",
+  "to":"gekosmagic:awkward_oozing"
+}

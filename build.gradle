@@ -61,6 +61,10 @@ repositories {
 		name = "TerraformersMC"
 		url = "https://maven.terraformersmc.com/releases/"
 	}
+
+	maven {
+		url "https://maven.shedaniel.me/"
+	}
 }
 
 dependencies {
@@ -76,7 +80,7 @@ dependencies {
 	modImplementation "maven.modrinth:fractal-lib:${project.fractal_version}"
 
 	modCompileOnly "dev.emi:emi-fabric:${project.emi_version}:api"
-	modLocalRuntime "dev.emi:emi-fabric:${project.emi_version}"
+	modLocalRuntime("dev.emi:emi-fabric:${project.emi_version}");
 
 	modImplementation ("com.klikli_dev:modonomicon-${project.minecraft_version}-fabric:${project.modonomicon_version}") { exclude(group: "com.klikli_dev") }
 }

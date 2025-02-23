@@ -2,30 +2,19 @@ package com.gekocaretaker.gekosmagic.datagen;
 
 import com.gekocaretaker.gekosmagic.Gekosmagic;
 import com.gekocaretaker.gekosmagic.block.ModBlocks;
-import com.gekocaretaker.gekosmagic.component.type.ElixirContentsComponent;
-import com.gekocaretaker.gekosmagic.elixir.Elixir;
 import com.gekocaretaker.gekosmagic.elixir.Elixirs;
 import com.gekocaretaker.gekosmagic.elixir.type.ThickElixirs;
 import com.gekocaretaker.gekosmagic.entity.ModEntities;
 import com.gekocaretaker.gekosmagic.item.ModItems;
 import com.gekocaretaker.gekosmagic.registry.ModRegistries;
-import com.gekocaretaker.gekosmagic.registry.ModRegistryKeys;
 import com.klikli_dev.modonomicon.api.datagen.AbstractModonomiconLanguageProvider;
 import com.klikli_dev.modonomicon.api.datagen.ModonomiconLanguageProvider;
-import com.klikli_dev.modonomicon.registry.RegistryObject;
-import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
-import net.fabricmc.fabric.api.datagen.v1.provider.FabricLanguageProvider;
 import net.minecraft.data.DataOutput;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.Pair;
 import org.apache.commons.lang3.text.WordUtils;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 public class EnglishLanguageProvider extends AbstractModonomiconLanguageProvider {
     public EnglishLanguageProvider(DataOutput output, ModonomiconLanguageProvider cachedProvider) {
@@ -88,6 +77,14 @@ public class EnglishLanguageProvider extends AbstractModonomiconLanguageProvider
         addElixirs(ModItems.BLAND_ELIXIR, "Bland Elixir");
         addElixirs(ModItems.DIFFUSING_ELIXIR, "Diffusing Elixir");
         add("item.gekosmagic.elixir.uninteresting", "Basic Elixir of Water");
+        add("item.gekosmagic.elixir.custom.missing_translation", "Homebrewed Elixir");
+        add("item.gekosmagic.splash_elixir.custom.missing_translation", "Homebrewed Splash Elixir");
+        add("item.gekosmagic.lingering_elixir.custom.missing_translation", "Homebrewed Lingering Elixir");
+        add("item.gekosmagic.buttered_elixir.custom.missing_translation", "Homebrewed Elixir");
+        add("item.gekosmagic.clear_elixir.custom.missing_translation", "Basic Elixir of Water");
+        add("item.gekosmagic.uninteresting_elixir.custom.missing_translation", "Basic Elixir of Water");
+        add("item.gekosmagic.bland_elixir.custom.missing_translation", "Homebrewed Bland Elixir");
+        add("item.gekosmagic.diffusing_elixir.custom.missing_translation", "Homebrewed Diffusing Elixir");
     }
 
     private void addItems() {
@@ -122,6 +119,7 @@ public class EnglishLanguageProvider extends AbstractModonomiconLanguageProvider
 
         this.add("tag.item.gekosmagic.foods.glow_berries", "Glow Berries");
         this.add("tag.item.gekosmagic.gecko_scales", "Gecko Scales");
+        this.add("tag.item.gekosmagic.essences", "Essences");
 
         addTrimMaterial("gecko_black", "Gecko Black");
         addTrimMaterial("gecko_red", "Gecko Red");

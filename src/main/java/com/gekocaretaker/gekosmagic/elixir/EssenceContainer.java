@@ -5,7 +5,6 @@ import com.gekocaretaker.gekosmagic.registry.ModRegistryKeys;
 import com.google.common.collect.Lists;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.handler.codec.DecoderException;
 import io.netty.handler.codec.EncoderException;
@@ -14,6 +13,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.tooltip.TooltipData;
 import net.minecraft.item.tooltip.TooltipType;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.RegistryByteBuf;
@@ -24,6 +24,7 @@ import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.text.Texts;
+import net.minecraft.util.ColorCode;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.dynamic.Codecs;
 import org.jetbrains.annotations.Nullable;
@@ -32,78 +33,21 @@ import org.slf4j.Logger;
 import java.util.List;
 import java.util.Optional;
 
+@SuppressWarnings("UnreachableCode") // This is here because intellij thinks that the static block at the bottom is unreachable.
 public class EssenceContainer {
-    public static final Codec<RegistryEntry<Essence>> ESSENCE_CODEC = ModRegistries.ESSENCE.getEntryCodec().validate((entry) -> {
-        return entry.matches(ModRegistries.ESSENCE.getEntry(Essences.AIR)) ? DataResult.error(() -> {
-            return "Essence must not be gekosmagic:air";
-        }) : DataResult.success(entry);
-    });
-
-    public static final Codec<EssenceContainer> CODEC = Codec.lazyInitialized(() -> {
-        return RecordCodecBuilder.create((instance) -> {
-            return instance.group(ESSENCE_CODEC.fieldOf("id").forGetter(EssenceContainer::getRegistryEntry),
-                    Codecs.rangedInt(0, 100).fieldOf("count").orElse(1).forGetter(EssenceContainer::getCount))
-                    .apply(instance, EssenceContainer::new);
-        });
-    });
-
-    public static final Codec<EssenceContainer> REGISTRY_ENTRY_CODEC = ESSENCE_CODEC.xmap(EssenceContainer::new, EssenceContainer::getRegistryEntry);
-
-    public static final PacketCodec<RegistryByteBuf, EssenceContainer> OPTIONAL_PACKET_CODEC = new PacketCodec<RegistryByteBuf, EssenceContainer>() {
-        private static final PacketCodec<RegistryByteBuf, RegistryEntry<Essence>> ESSENCE_PACKET_CODEC = PacketCodecs.registryEntry(ModRegistryKeys.ESSENCE);
-
-        @Override
-        public EssenceContainer decode(RegistryByteBuf buf) {
-            int i = buf.readVarInt();
-            if (i < 0) {
-                return EssenceContainer.EMPTY;
-            } else {
-                RegistryEntry<Essence> registryEntry = ESSENCE_PACKET_CODEC.decode(buf);
-                return new EssenceContainer(registryEntry, i);
-            }
-        }
-
-        @Override
-        public void encode(RegistryByteBuf buf, EssenceContainer value) {
-            if (value.isEmpty()) {
-                buf.writeVarInt(0);
-            } else {
-                buf.writeVarInt(value.getCount());
-                ESSENCE_PACKET_CODEC.encode(buf, value.getRegistryEntry());
-            }
-        }
-    };
-
-    public static final PacketCodec<RegistryByteBuf, EssenceContainer> PACKET_CODEC = new PacketCodec<RegistryByteBuf, EssenceContainer>() {
-        @Override
-        public EssenceContainer decode(RegistryByteBuf buf) {
-            EssenceContainer essenceContainer = (EssenceContainer) EssenceContainer.OPTIONAL_PACKET_CODEC.decode(buf);
-            if (essenceContainer.isEmpty()) {
-                throw new DecoderException("Empty EssenceContainer not allowed");
-            } else {
-                return essenceContainer;
-            }
-        }
-
-        @Override
-        public void encode(RegistryByteBuf buf, EssenceContainer value) {
-            if (value.isEmpty()) {
-                throw new EncoderException("Empty EssenceContainer not allowed");
-            } else {
-                EssenceContainer.OPTIONAL_PACKET_CODEC.encode(buf, value);
-            }
-        }
-    };
-
-    public static final PacketCodec<RegistryByteBuf, List<EssenceContainer>> LIST_PACKET_CODEC = PACKET_CODEC.collect(PacketCodecs.toList());
+    public static final Codec<EssenceContainer> CODEC;
+    public static final PacketCodec<RegistryByteBuf, EssenceContainer> OPTIONAL_PACKET_CODEC;
+    public static final PacketCodec<RegistryByteBuf, EssenceContainer> PACKET_CODEC;
+    public static final PacketCodec<RegistryByteBuf, List<EssenceContainer>> LIST_PACKET_CODEC;
 
     private static final Logger LOGGER = LogUtils.getLogger();
     private int count;
     private final Essence essence;
+    //private RegistryEntry<Essence> essenceRegistryEntry;
     public static final EssenceContainer EMPTY = new EssenceContainer((Void) null);
 
-    public EssenceContainer(RegistryEntry<Essence> essence) {
-        this(essence.value(), 1);
+    public EssenceContainer(Essence essence) {
+        this(essence, 1);
     }
 
     public EssenceContainer(Essence essence, int count) {
@@ -111,8 +55,14 @@ public class EssenceContainer {
         this.count = count;
     }
 
-    public EssenceContainer(RegistryEntry<Essence> essenceRegistryEntry, Integer integer) {
-        this(essenceRegistryEntry.value(), integer.intValue());
+    public EssenceContainer(RegistryEntry<Essence> essenceEntry) {
+        this(essenceEntry, 1);
+    }
+
+    public EssenceContainer(RegistryEntry<Essence> essenceEntry, int count) {
+        //this.essenceRegistryEntry = essenceEntry;
+        this.essence = essenceEntry.value();
+        this.count = count;
     }
 
     private EssenceContainer(@Nullable Void v) {
@@ -122,6 +72,11 @@ public class EssenceContainer {
 
     public Essence getEssence() {
         return this.essence;
+    }
+
+    public RegistryEntry<Essence> getEssenceRegistryEntry() {
+        return ModRegistries.ESSENCE.getEntry(essence);
+        //return this.essenceRegistryEntry;
     }
 
     public int getCount() {
@@ -140,26 +95,26 @@ public class EssenceContainer {
         this.increment(-amount);
     }
 
-    public int getMaxCount() {
-        return this.essence.getMaxCount();
+    public int getLimit() {
+        return this.essence.limit();
     }
 
     public boolean isCountMaxed() {
-        return this.count == this.getMaxCount();
+        return this.count == this.getLimit();
     }
 
     public void capCount() {
-        if (this.getCount() > this.getMaxCount()) {
-            this.count = this.getMaxCount();
+        if (this.getCount() > this.getLimit()) {
+            this.count = this.getLimit();
         }
     }
 
     public int getEssenceColor() {
-        return this.essence.getColor();
+        return this.essence.color();
     }
 
     public String getTranslationKey() {
-        return this.essence.getTranslationKey();
+        return this.essence.getOrCreateTranslationKey();
     }
 
     public Text getName() {
@@ -174,12 +129,13 @@ public class EssenceContainer {
         List<Text> list = Lists.newArrayList();
         MutableText mutableText = Text.empty().append(this.getName()).withColor(this.getEssenceColor());
         list.add(mutableText);
-        MutableText fillText = Text.literal(this.getCount() + " / " + this.getMaxCount()).formatted(Formatting.DARK_PURPLE);
+        MutableText fillText = Text.literal(this.getCount() + " / " + this.getLimit()).formatted(Formatting.DARK_PURPLE);
         list.add(fillText);
 
         if (type.isAdvanced()) {
-            MutableText idText = Text.literal(ModRegistries.ESSENCE.getId(this.getEssence()).toString()).formatted(Formatting.DARK_GRAY);
+            MutableText idText = Text.literal(this.essence.id().toString()).formatted(Formatting.DARK_GRAY);
             list.add(idText);
+            MutableText colorCodeText = Text.literal("#" + new ColorCode(this.essence.color())).formatted(Formatting.DARK_GRAY);
         }
 
         return list;
@@ -187,16 +143,11 @@ public class EssenceContainer {
 
     public Text toHoverableText() {
         MutableText mutableText = Text.empty().append(this.getName());
-        MutableText mutableText2 = Texts.bracketed(mutableText);
-        return mutableText2;
+        return Texts.bracketed(mutableText);
     }
 
     public Optional<TooltipData> getTooltipData() {
         return this.getEssence().getTooltipData(this);
-    }
-
-    public RegistryEntry<Essence> getRegistryEntry() {
-        return ModRegistries.ESSENCE.getEntry(this.essence);
     }
 
     public boolean isOf(Essence essence) {
@@ -212,7 +163,11 @@ public class EssenceContainer {
     }
 
     public boolean isEmpty() {
-        return this == EMPTY || this.essence == Essences.AIR || this.essence == null || this.count < 0;
+        boolean thisEmpty = this == EMPTY;
+        boolean essenceNull = this.essence == null;
+        boolean countLT0 = this.count < 0;
+
+        return thisEmpty || essenceNull || countLT0;
     }
 
     public static Optional<EssenceContainer> fromNbt(RegistryWrapper.WrapperLookup registries, NbtElement nbt) {
@@ -222,6 +177,66 @@ public class EssenceContainer {
     }
 
     public NbtElement encode(RegistryWrapper.WrapperLookup registries, NbtElement prefix) {
-        return CODEC.encode(this, registries.getOps(NbtOps.INSTANCE), prefix).getOrThrow();
+        Optional<NbtElement> encoded = CODEC.encode(this, registries.getOps(NbtOps.INSTANCE), prefix).result();
+        return encoded.orElseGet(NbtCompound::new);
+    }
+
+    static {
+        CODEC = Codec.lazyInitialized(() ->
+                RecordCodecBuilder.create((instance) ->
+                        instance.group(
+                        Essence.REGISTRY_CODEC.fieldOf("id").forGetter(EssenceContainer::getEssenceRegistryEntry),
+                        Codecs.rangedInt(0, 100).fieldOf("count").forGetter(EssenceContainer::getCount)
+                        ).apply(instance, EssenceContainer::new)
+                )
+        );
+
+        OPTIONAL_PACKET_CODEC = new PacketCodec<>() {
+            private static final PacketCodec<RegistryByteBuf, RegistryEntry<Essence>> ESSENCE_PACKET_CODEC = PacketCodecs.registryEntry(ModRegistryKeys.ESSENCE);
+
+            @Override
+            public EssenceContainer decode(RegistryByteBuf buf) {
+                int i = buf.readVarInt();
+                if (i < 0) {
+                    return EssenceContainer.EMPTY;
+                } else {
+                    RegistryEntry<Essence> registryEntry = ESSENCE_PACKET_CODEC.decode(buf);
+                    return new EssenceContainer(registryEntry, i);
+                }
+            }
+
+            @Override
+            public void encode(RegistryByteBuf buf, EssenceContainer value) {
+                if (value.isEmpty()) {
+                    buf.writeVarInt(0);
+                } else {
+                    buf.writeVarInt(value.getCount());
+                    ESSENCE_PACKET_CODEC.encode(buf, value.getEssenceRegistryEntry());
+                }
+            }
+        };
+
+        PACKET_CODEC = new PacketCodec<>() {
+            @Override
+            public EssenceContainer decode(RegistryByteBuf buf) {
+                EssenceContainer essenceContainer = EssenceContainer.OPTIONAL_PACKET_CODEC.decode(buf);
+                if (essenceContainer.isEmpty()) {
+                    throw new DecoderException("Empty EssenceContainer not allowed");
+                } else {
+                    return essenceContainer;
+                }
+            }
+
+            @Override
+            public void encode(RegistryByteBuf buf, EssenceContainer value) {
+                if (value.isEmpty()) {
+                    throw new EncoderException("Empty EssenceContainer not allowed");
+                } else {
+                    EssenceContainer.OPTIONAL_PACKET_CODEC.encode(buf, value);
+                }
+            }
+        };
+
+        LIST_PACKET_CODEC = PACKET_CODEC.collect(PacketCodecs.toList());
     }
 }

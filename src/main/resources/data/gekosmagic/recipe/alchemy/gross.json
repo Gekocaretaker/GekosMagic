@@ -1,0 +1,6 @@
+{
+  "type":"gekosmagic:elixir",
+  "from":"gekosmagic:water",
+  "essence":"gekosmagic:water",
+  "to":"gekosmagic:gross"
+}

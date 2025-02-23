@@ -1,0 +1,6 @@
+{
+  "type": "gekosmagic:item_alchemy",
+  "from": "gekosmagic:elixir",
+  "essence": "gekosmagic:rage",
+  "to": "gekosmagic:bland_elixir"
+}

@@ -9,9 +9,6 @@ import net.minecraft.item.SpawnEggItem;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class ModItems {
     public static final SpawnEggItem GECKO_SPAWN_EGG = register("gecko_spawn_egg", new SpawnEggItem(ModEntities.GECKO, 0x44acea, 0xea9e44, new Item.Settings()));
     public static final Item TOKAY_GECKO_SCALE = register("tokay_gecko_scale", new Item(new Item.Settings()));

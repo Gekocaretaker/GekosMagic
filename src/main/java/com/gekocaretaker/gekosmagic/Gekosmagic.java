@@ -1,7 +1,6 @@
 package com.gekocaretaker.gekosmagic;
 
 import com.gekocaretaker.gekosmagic.block.ModBlocks;
-import com.gekocaretaker.gekosmagic.block.entity.AlchemyStandBlockEntity;
 import com.gekocaretaker.gekosmagic.block.entity.ModBlockEntityTypes;
 import com.gekocaretaker.gekosmagic.component.ModDataComponentTypes;
 import com.gekocaretaker.gekosmagic.elixir.Elixirs;
@@ -9,32 +8,26 @@ import com.gekocaretaker.gekosmagic.elixir.Essences;
 import com.gekocaretaker.gekosmagic.enchantment.ModEnchantments;
 import com.gekocaretaker.gekosmagic.entity.ModEntities;
 import com.gekocaretaker.gekosmagic.entity.data.ModTrackedDataHandlerRegistry;
-import com.gekocaretaker.gekosmagic.entity.passive.GeckoVariant;
+import com.gekocaretaker.gekosmagic.entity.passive.GeckoVariants;
 import com.gekocaretaker.gekosmagic.item.ModItemGroups;
 import com.gekocaretaker.gekosmagic.item.ModItems;
 import com.gekocaretaker.gekosmagic.loot.ModLootTables;
 import com.gekocaretaker.gekosmagic.loot.function.ModLootFunctionTypes;
-import com.gekocaretaker.gekosmagic.network.EssenceContainerPayload;
-import com.gekocaretaker.gekosmagic.network.EssenceIndexPayload;
+import com.gekocaretaker.gekosmagic.network.ModPayloads;
 import com.gekocaretaker.gekosmagic.potion.ModPotions;
 import com.gekocaretaker.gekosmagic.predicate.entity.ModEntitySubPredicateTypes;
 import com.gekocaretaker.gekosmagic.recipe.AlchemyRecipeRegistry;
-import com.gekocaretaker.gekosmagic.recipe.ElixirRecipes;
 import com.gekocaretaker.gekosmagic.recipe.ModRecipeSerializers;
+import com.gekocaretaker.gekosmagic.recipe.ModRecipeTypes;
 import com.gekocaretaker.gekosmagic.registry.ModRegistries;
 import com.gekocaretaker.gekosmagic.registry.ModRegistryKeys;
-import com.gekocaretaker.gekosmagic.resource.AlchemyRecipeDataLoader;
-import com.gekocaretaker.gekosmagic.screen.AlchemyStandScreenHandler;
 import com.gekocaretaker.gekosmagic.screen.ModScreenHandlerTypes;
 import com.gekocaretaker.gekosmagic.sound.ModSounds;
 import com.gekocaretaker.gekosmagic.stat.ModStats;
 import com.gekocaretaker.gekosmagic.util.ModTags;
 import com.gekocaretaker.gekosmagic.village.ModTradeOffers;
+import com.gekocaretaker.gekosmagic.world.ModWorldGen;
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
-import net.minecraft.resource.ResourceType;
 import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,9 +41,8 @@ public class Gekosmagic implements ModInitializer {
     @Override
     public void onInitialize() {
         Elixirs.init();
-        ElixirRecipes.init();
         Essences.init();
-        GeckoVariant.init();
+        GeckoVariants.init();
 
         ModBlockEntityTypes.init();
         ModBlocks.init();
@@ -62,8 +54,10 @@ public class Gekosmagic implements ModInitializer {
         ModItems.init();
         ModLootFunctionTypes.init();
         ModLootTables.init();
+        ModPayloads.init();
         ModPotions.init();
         ModRecipeSerializers.init();
+        ModRecipeTypes.init();
         ModRegistries.init();
         ModRegistryKeys.init();
         ModScreenHandlerTypes.init();
@@ -72,20 +66,7 @@ public class Gekosmagic implements ModInitializer {
         ModTags.init();
         ModTrackedDataHandlerRegistry.init();
         ModTradeOffers.init();
-
-        PayloadTypeRegistry.playS2C().register(EssenceContainerPayload.ID, EssenceContainerPayload.CODEC);
-        PayloadTypeRegistry.playC2S().register(EssenceIndexPayload.ID, EssenceIndexPayload.CODEC);
-
-        ServerPlayNetworking.registerGlobalReceiver(EssenceIndexPayload.ID, (payload, context) -> {
-            if (context.player().getWorld().getBlockEntity(payload.pos()) instanceof AlchemyStandBlockEntity) {
-                if (context.player().currentScreenHandler instanceof AlchemyStandScreenHandler screenHandler
-                    && screenHandler.getBlockEntity().getPos().equals(payload.pos())) {
-                    ((AlchemyStandBlockEntity) context.player().getWorld().getBlockEntity(payload.pos())).setSelectedIndex(payload.index());
-                }
-            }
-        });
-
-        ResourceManagerHelper.get(ResourceType.SERVER_DATA).registerReloadListener(AlchemyRecipeDataLoader.INSTANCE);
+        ModWorldGen.init();
     }
 
     public static Identifier identify(String path) {
@@ -105,12 +86,13 @@ public class Gekosmagic implements ModInitializer {
       GekosmagicClient
       ModItemGroups
 
+      // Update for this group of lines, I am not giving each base a unique feature, as they serve a different purpose.
       Maybe make each ingredient able to become a base elixir.
       That would mean for all vanilla (minus gunpowder & dragon breath)
       and gecko scales + (plus any other ingredients that comes along)
       Each should maybe have a small unique feature
 
-      Base Elixirs + their ingredient + <use|optional>:
+      Base Elixirs + their ingredient:
       Awkward + Nether Wart
       Thick + Slime Block
       Mundane + Magma Cream

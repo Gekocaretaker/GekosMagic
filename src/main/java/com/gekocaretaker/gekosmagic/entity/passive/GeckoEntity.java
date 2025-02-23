@@ -2,7 +2,7 @@ package com.gekocaretaker.gekosmagic.entity.passive;
 
 import com.gekocaretaker.gekosmagic.entity.ModEntities;
 import com.gekocaretaker.gekosmagic.entity.data.ModTrackedDataHandlerRegistry;
-import com.gekocaretaker.gekosmagic.registry.ModRegistries;
+import com.gekocaretaker.gekosmagic.registry.ModRegistryKeys;
 import com.gekocaretaker.gekosmagic.sound.ModSounds;
 import com.gekocaretaker.gekosmagic.util.ModTags;
 import net.minecraft.block.Blocks;
@@ -25,6 +25,7 @@ import net.minecraft.item.DyeItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.tag.DamageTypeTags;
@@ -48,11 +49,10 @@ public class GeckoEntity extends TameableEntity implements VariantHolder<Registr
     private int danceAnimationTimeout = 0;
     private int sitAnimationTimeout = 0;
 
-    private static final TrackedData<RegistryEntry<GeckoVariant>> GECKO_VARIANT;
+    private static final TrackedData<RegistryEntry<GeckoVariant>> VARIANT;
     private static final TrackedData<Integer> COLLAR_COLOR;
     private int scaleShedTime = -1;
     private boolean hasFed = false;
-    private static final RegistryKey<GeckoVariant> DEFAULT_VARIANT;
 
     private boolean songPlaying;
     @Nullable
@@ -80,14 +80,14 @@ public class GeckoEntity extends TameableEntity implements VariantHolder<Registr
     }
 
     public RegistryEntry<GeckoVariant> getVariant() {
-        return (RegistryEntry) this.dataTracker.get(GECKO_VARIANT);
+        return this.dataTracker.get(VARIANT);
     }
 
 
 
     @Override
     public void setVariant(RegistryEntry<GeckoVariant> registryEntry) {
-        this.dataTracker.set(GECKO_VARIANT, registryEntry);
+        this.dataTracker.set(VARIANT, registryEntry);
     }
 
     public static DefaultAttributeContainer.Builder createGeckoAttributes() {
@@ -110,7 +110,7 @@ public class GeckoEntity extends TameableEntity implements VariantHolder<Registr
         if (!this.getWorld().isClient && this.isAlive() && !this.isBaby() && this.scaleShedTime == 0) {
             this.playSound(ModSounds.ENTITY_GECKO_SCALES_DROP, 1.0F, (this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1.0F);
             int scaleCount = this.random.nextInt(3) + 1;
-            this.dropStack(new ItemStack(this.getVariant().value().scale(), scaleCount));
+            this.dropStack(new ItemStack(this.getVariant().value().getScaleItem(), scaleCount));
             this.emitGameEvent(GameEvent.ENTITY_PLACE);
             this.hasFed = false;
             this.scaleShedTime--;
@@ -198,14 +198,14 @@ public class GeckoEntity extends TameableEntity implements VariantHolder<Registr
     protected void initDataTracker(DataTracker.Builder builder) {
         super.initDataTracker(builder);
         builder.add(COLLAR_COLOR, DyeColor.RED.getId());
-        builder.add(GECKO_VARIANT, ModRegistries.GECKO_VARIANT.entryOf(DEFAULT_VARIANT));
+        builder.add(VARIANT, this.getRegistryManager().get(ModRegistryKeys.GECKO_VARIANT).getEntry(GeckoVariants.DEFAULT).get());
     }
 
     @Override
     public void writeCustomDataToNbt(NbtCompound nbt) {
         super.writeCustomDataToNbt(nbt);
         nbt.putByte("CollarColor", (byte) this.getCollarColor().getId());
-        nbt.putString("variant", ((RegistryKey) this.getVariant().getKey().orElse(DEFAULT_VARIANT)).getValue().toString());
+        nbt.putString("variant", this.getVariant().getKey().orElse(GeckoVariants.DEFAULT).getValue().toString());
         nbt.putInt("ScaleShedTime", this.scaleShedTime);
         nbt.putBoolean("HasFed", this.hasFed);
     }
@@ -219,10 +219,11 @@ public class GeckoEntity extends TameableEntity implements VariantHolder<Registr
 
         if (nbt.contains("variant")) {
             Identifier variant = Identifier.of(nbt.getString("variant"));
-            if (ModRegistries.GECKO_VARIANT.containsId(variant)) {
-                this.setVariant(ModRegistries.GECKO_VARIANT.getEntry(variant).get());
+            Registry<GeckoVariant> registry = this.getRegistryManager().get(ModRegistryKeys.GECKO_VARIANT);
+            if (registry.containsId(variant)) {
+                this.setVariant(registry.getEntry(variant).get());
             } else {
-                this.setVariant(ModRegistries.GECKO_VARIANT.getEntry(DEFAULT_VARIANT).get());
+                this.setVariant(registry.getEntry(GeckoVariants.DEFAULT).get());
             }
         }
 
@@ -237,7 +238,7 @@ public class GeckoEntity extends TameableEntity implements VariantHolder<Registr
 
     @Override
     public EntityData initialize(ServerWorldAccess world, LocalDifficulty difficulty, SpawnReason spawnReason, @Nullable EntityData entityData) {
-        this.setVariant(ModRegistries.GECKO_VARIANT.entryOf(GeckoVariant.getRandomSpawnable(world.getRandom())));
+        this.setVariant(this.getRegistryManager().get(ModRegistryKeys.GECKO_VARIANT).entryOf(GeckoVariants.select(world.getRandom(), this.getRegistryManager()).registryKey()));
         return super.initialize(world, difficulty, spawnReason, entityData);
     }
 
@@ -293,8 +294,7 @@ public class GeckoEntity extends TameableEntity implements VariantHolder<Registr
         ActionResult actionResult;
         if (this.isTamed()) {
             if (this.isOwner(player)) {
-                if (item instanceof DyeItem) {
-                    DyeItem dyeItem = (DyeItem) item;
+                if (item instanceof DyeItem dyeItem) {
                     DyeColor dyeColor = dyeItem.getColor();
                     if (!this.getWorld().isClient()) {
                         this.setCollarColor(dyeColor);
@@ -306,7 +306,7 @@ public class GeckoEntity extends TameableEntity implements VariantHolder<Registr
                 } else if (this.isBreedingItem(itemStack) && this.getHealth() < this.getMaxHealth()) {
                     if (!this.getWorld().isClient()) {
                         this.eat(player, hand, itemStack);
-                        FoodComponent foodComponent = (FoodComponent) itemStack.get(DataComponentTypes.FOOD);
+                        FoodComponent foodComponent = itemStack.get(DataComponentTypes.FOOD);
                         this.heal(foodComponent != null ? (float) foodComponent.nutrition() : 1.0F);
                     }
 
@@ -351,8 +351,7 @@ public class GeckoEntity extends TameableEntity implements VariantHolder<Registr
         if (this.random.nextInt(3) == 0) {
             this.setOwner(player);
             this.navigation.stop();
-            this.setTarget((LivingEntity) null);
-            //this.setSitting(true);
+            this.setTarget(null);
             this.getWorld().sendEntityStatus(this, (byte) 7);
         } else {
             this.getWorld().sendEntityStatus(this, (byte) 6);
@@ -382,10 +381,9 @@ public class GeckoEntity extends TameableEntity implements VariantHolder<Registr
             return false;
         } else if (!this.isTamed()) {
             return false;
-        } else if (!(other instanceof GeckoEntity)) {
+        } else if (!(other instanceof GeckoEntity geckoEntity)) {
             return false;
         } else {
-            GeckoEntity geckoEntity = (GeckoEntity) other;
             if (!geckoEntity.isTamed()) {
                 return false;
             } else if (geckoEntity.isInSittingPose()) {
@@ -403,7 +401,6 @@ public class GeckoEntity extends TameableEntity implements VariantHolder<Registr
 
     static {
         COLLAR_COLOR = DataTracker.registerData(GeckoEntity.class, TrackedDataHandlerRegistry.INTEGER);
-        GECKO_VARIANT = DataTracker.registerData(GeckoEntity.class, ModTrackedDataHandlerRegistry.GECKO_VARIANT);
-        DEFAULT_VARIANT = GeckoVariant.TOKAY;
+        VARIANT = DataTracker.registerData(GeckoEntity.class, ModTrackedDataHandlerRegistry.GECKO_VARIANT);
     }
 }

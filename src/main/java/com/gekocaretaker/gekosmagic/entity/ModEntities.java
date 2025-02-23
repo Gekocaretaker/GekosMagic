@@ -20,14 +20,6 @@ public class ModEntities {
         );
     }
 
-    private static EntityType registerBobber(EntityType.EntityFactory entity, SpawnGroup group, float width, float height, String id) {
-        return Registry.register(Registries.ENTITY_TYPE,
-                Gekosmagic.identify(id),
-                EntityType.Builder.create(entity, group).disableSaving().disableSummon().dimensions(width, height)
-                        .maxTrackingRange(4).trackingTickInterval(5).build()
-        );
-    }
-
     public static void init() {
         FabricDefaultAttributeRegistry.register(GECKO, GeckoEntity.createGeckoAttributes());
     }

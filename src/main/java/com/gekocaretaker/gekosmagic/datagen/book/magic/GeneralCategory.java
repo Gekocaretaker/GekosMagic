@@ -6,6 +6,7 @@ import com.gekocaretaker.gekosmagic.datagen.book.magic.fourth_wall.FourthWallEnt
 import com.gekocaretaker.gekosmagic.datagen.book.magic.general.IntroEntry;
 import com.gekocaretaker.gekosmagic.datagen.book.magic.general.LinkTo4thWallEntry;
 import com.gekocaretaker.gekosmagic.datagen.book.magic.general.Version1Entry;
+import com.gekocaretaker.gekosmagic.datagen.book.magic.general.Version1_1Entry;
 import com.klikli_dev.modonomicon.api.datagen.CategoryProvider;
 import com.klikli_dev.modonomicon.api.datagen.ModonomiconProviderBase;
 import com.klikli_dev.modonomicon.api.datagen.book.BookEntryModel;
@@ -25,7 +26,7 @@ public class GeneralCategory extends CategoryProvider {
                 "_____________________",
                 "_____________________",
                 "__________a__________",
-                "________b____________",
+                "________b_c__________",
                 "_____________________"
         };
     }
@@ -35,6 +36,8 @@ public class GeneralCategory extends CategoryProvider {
         BookEntryModel introEntry = this.add(new IntroEntry(this).generate('a'));
         BookEntryModel version1Entry = this.add(new Version1Entry(this)
                 .generate('b').withParent(introEntry));
+        BookEntryModel version1_1Entry = this.add(new Version1_1Entry(this)
+                .generate('c').withParent(version1Entry));
     }
 
     @Override

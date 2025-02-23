@@ -1,0 +1,6 @@
+{
+  "type":"gekosmagic:elixir",
+  "from":"gekosmagic:mundane",
+  "essence":"gekosmagic:fear",
+  "to":"gekosmagic:mundane_lizard_brain"
+}

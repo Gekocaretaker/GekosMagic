@@ -6,9 +6,7 @@ import com.gekocaretaker.gekosmagic.component.ModDataComponentTypes;
 import com.gekocaretaker.gekosmagic.component.type.ElixirContentsComponent;
 import com.gekocaretaker.gekosmagic.elixir.Elixir;
 import com.gekocaretaker.gekosmagic.elixir.EssenceContainer;
-import com.gekocaretaker.gekosmagic.elixir.Essences;
 import com.gekocaretaker.gekosmagic.item.ElixirItem;
-import com.gekocaretaker.gekosmagic.item.ModItems;
 import com.gekocaretaker.gekosmagic.recipe.AlchemyRecipeRegistry;
 import net.minecraft.advancement.criterion.Criteria;
 import net.minecraft.entity.player.PlayerEntity;
@@ -196,19 +194,12 @@ public class AlchemyStandScreenHandler extends ScreenHandler {
         @Override
         public void markDirty() {
             super.markDirty();
+            AlchemyStandScreenHandler.this.blockEntity.markDirty();
             AlchemyStandScreenHandler.this.inventoryChangeListener.run();
         }
 
-        public static <T extends ElixirItem> boolean matches(ItemStack stack) {
-            return stack.isOf(ModItems.ELIXIR) ||
-                    stack.isOf(ModItems.SPLASH_ELIXIR) ||
-                    stack.isOf(ModItems.LINGERING_ELIXIR) ||
-                    stack.isOf(ModItems.BUTTERED_ELIXIR) ||
-                    stack.isOf(ModItems.CLEAR_ELIXIR) ||
-                    stack.isOf(ModItems.UNINTERESTING_ELIXIR) ||
-                    stack.isOf(ModItems.BLAND_ELIXIR) ||
-                    stack.isOf(ModItems.DIFFUSING_ELIXIR) ||
-                    stack.isOf(ModItems.GLASS_PHIAL);
+        public static boolean matches(ItemStack stack) {
+            return stack.getItem() instanceof ElixirItem;
         }
     }
 
@@ -228,8 +219,7 @@ public class AlchemyStandScreenHandler extends ScreenHandler {
 
         @Override
         public boolean canInsert(ItemStack stack) {
-            return this.alchemyRecipeRegistry.isElixirType(Essences.itemIsEssence(stack.getItem()).getLeft());
-            //return this.alchemyRecipeRegistry.isValidIngredient(Essences.itemIsEssence(stack.getItem()).getLeft());
+            return this.alchemyRecipeRegistry.isElixirIngredient(stack);
         }
     }
 
