@@ -1,8 +1,6 @@
 package com.gekocaretaker.gekosmagic.client.render;
 
 import com.gekocaretaker.gekosmagic.block.ModBlocks;
-import com.gekocaretaker.gekosmagic.block.entity.ModBlockEntityTypes;
-import com.gekocaretaker.gekosmagic.client.render.block.AlchemyStandBlockEntityRenderer;
 import com.gekocaretaker.gekosmagic.client.render.entity.GeckoRenderer;
 import com.gekocaretaker.gekosmagic.client.render.entity.model.GeckoEntityModel;
 import com.gekocaretaker.gekosmagic.entity.ModEntities;
@@ -12,7 +10,6 @@ import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityModelLayerRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.block.entity.BlockEntityRendererFactories;
 import net.minecraft.client.render.entity.FlyingItemEntityRenderer;
 
 @Environment(EnvType.CLIENT)

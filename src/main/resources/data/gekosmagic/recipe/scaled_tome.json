@@ -1,12 +1,8 @@
 {
   "type": "minecraft:crafting_shaped",
   "key": {
-    "#": {
-      "tag": "gekosmagic:gecko_scales"
-    },
-    "B": {
-      "item": "minecraft:book"
-    }
+    "#": "#gekosmagic:gecko_scales",
+    "B": "minecraft:book"
   },
   "pattern": [
     "###",

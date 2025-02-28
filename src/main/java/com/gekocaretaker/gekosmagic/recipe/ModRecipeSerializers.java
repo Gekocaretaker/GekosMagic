@@ -7,12 +7,12 @@ import com.gekocaretaker.gekosmagic.recipe.serializer.ItemAlchemySerializer;
 import com.gekocaretaker.gekosmagic.recipe.serializer.ElixirSerializer;
 import net.minecraft.recipe.Recipe;
 import net.minecraft.recipe.RecipeSerializer;
-import net.minecraft.recipe.SpecialRecipeSerializer;
+import net.minecraft.recipe.SpecialCraftingRecipe;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 
 public class ModRecipeSerializers {
-    public static final RecipeSerializer<ElixirArrowRecipe> ELIXIR_ARROW = register("crafting_special_elixir_tipped_arrow", new SpecialRecipeSerializer<>(ElixirArrowRecipe::new));
+    public static final RecipeSerializer<ElixirArrowRecipe> ELIXIR_ARROW = register("crafting_special_elixir_tipped_arrow", new SpecialCraftingRecipe.SpecialRecipeSerializer<>(ElixirArrowRecipe::new));
     public static final RecipeSerializer<ElixirRecipe> ELIXIR = register("elixir", new ElixirSerializer());
     public static final RecipeSerializer<ItemAlchemyRecipe> ITEM_ALCHEMY = register("item_alchemy", new ItemAlchemySerializer());
     public static final RecipeSerializer<BasicAlchemyRecipe> BASIC_ALCHEMY = register("basic_alchemy", new BasicAlchemySerializer());

@@ -43,7 +43,6 @@ public class EssenceContainer {
     private static final Logger LOGGER = LogUtils.getLogger();
     private int count;
     private final Essence essence;
-    //private RegistryEntry<Essence> essenceRegistryEntry;
     public static final EssenceContainer EMPTY = new EssenceContainer((Void) null);
 
     public EssenceContainer(Essence essence) {
@@ -76,7 +75,6 @@ public class EssenceContainer {
 
     public RegistryEntry<Essence> getEssenceRegistryEntry() {
         return ModRegistries.ESSENCE.getEntry(essence);
-        //return this.essenceRegistryEntry;
     }
 
     public int getCount() {
@@ -152,6 +150,10 @@ public class EssenceContainer {
 
     public boolean isOf(Essence essence) {
         return this.essence == essence;
+    }
+
+    public boolean isOf(RegistryEntry<Essence> essenceRegistryEntry) {
+        return isOf(essenceRegistryEntry.value());
     }
 
     public boolean isOf(ItemStack itemStack) {

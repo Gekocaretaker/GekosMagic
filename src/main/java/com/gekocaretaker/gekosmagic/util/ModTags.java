@@ -10,6 +10,7 @@ public class ModTags {
     public static final TagKey<Item> COMMON_BERRIES = TagKey.of(RegistryKeys.ITEM, Identifier.of("c", "foods/berries"));
     public static final TagKey<Item> GLOW_BERRIES = TagKey.of(RegistryKeys.ITEM, Gekosmagic.identify("foods/glow_berries"));
     public static final TagKey<Item> ESSENCES = TagKey.of(RegistryKeys.ITEM, Gekosmagic.identify("essences"));
+    public static final TagKey<Item> ELIXIRS = TagKey.of(RegistryKeys.ITEM, Gekosmagic.identify("elixirs"));
 
     public static void init() {}
 

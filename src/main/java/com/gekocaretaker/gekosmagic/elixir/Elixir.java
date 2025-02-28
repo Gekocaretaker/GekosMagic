@@ -2,9 +2,11 @@ package com.gekocaretaker.gekosmagic.elixir;
 
 import com.gekocaretaker.gekosmagic.registry.ModRegistries;
 import com.gekocaretaker.gekosmagic.registry.ModRegistryKeys;
+import com.gekocaretaker.gekosmagic.util.ModTags;
 import com.mojang.serialization.Codec;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.item.ItemStack;
 import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.codec.PacketCodecs;
@@ -85,6 +87,10 @@ public class Elixir {
             return key.getValue().getPath();
         }).orElse("water");
         return prefix + type + center + base;
+    }
+
+    public static boolean isElixirIngredient(ItemStack itemStack) {
+        return itemStack.isIn(ModTags.ESSENCES);
     }
 
     public List<StatusEffectInstance> getEffects() {

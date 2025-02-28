@@ -16,10 +16,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 
+// TODO: Absolutely Not does not work with Phantoms right now.
 @Mixin(targets = "net.minecraft.entity.mob.PhantomEntity$FindTargetGoal")
 public abstract class PhantomEntityFindTargetGoalMixin {
-    @Final
+    /*@Final
     @Shadow(aliases = "field_7319")
     private PhantomEntity field_7319;
 
@@ -29,13 +31,18 @@ public abstract class PhantomEntityFindTargetGoalMixin {
 
     @Inject(method = "canStart()Z", at = @At(value = "HEAD"), cancellable = true)
     private void gekosmagic$canStartInject(CallbackInfoReturnable<Boolean> cir) {
-        cir.cancel();
+        //cir.cancel();
         if (this.delay > 0) {
             --this.delay;
             cir.setReturnValue(false);
         } else {
             this.delay = MathHelper.ceilDiv(60, 2);
-            List<PlayerEntity> players = field_7319.getWorld().getPlayers(this.PLAYERS_IN_RANGE_PREDICATE, field_7319, field_7319.getBoundingBox().expand(16.0, 64.0, 16.0));
+            List<? extends PlayerEntity> players = field_7319.getWorld().getPlayers();
+            players.forEach(player -> {
+                if (field_7319.getWorld().isPlayerInRange(field_7319.getX(), field_7319.getY(), field_7319.getZ(), 16.0)) {
+                    players.remove(player);
+                }
+            });
             List<PlayerEntity> list = new ArrayList<>();
             for (PlayerEntity player : players) {
                 if (!player.hasStatusEffect(ModEffects.ABSOLUTELY_NOT)) {
@@ -45,7 +52,7 @@ public abstract class PhantomEntityFindTargetGoalMixin {
             if (!list.isEmpty()) {
                 list.sort(Comparator.comparing(Entity::getY).reversed());
                 for (PlayerEntity playerEntity : list) {
-                    if (!field_7319.isTarget(playerEntity, TargetPredicate.DEFAULT)) continue;
+                    if (!Objects.equals(playerEntity, field_7319.getTarget())) continue;
                     field_7319.setTarget(playerEntity);
                     cir.setReturnValue(true);
                 }
@@ -53,5 +60,6 @@ public abstract class PhantomEntityFindTargetGoalMixin {
                 cir.setReturnValue(false);
             }
         }
-    }
+        cir.cancel();
+    }*/
 }

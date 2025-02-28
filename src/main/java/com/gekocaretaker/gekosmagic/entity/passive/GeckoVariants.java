@@ -28,7 +28,7 @@ public class GeckoVariants {
     }
 
     public static RegistryEntry.Reference<GeckoVariant> select(Random random, DynamicRegistryManager registries) {
-        Stream<RegistryEntry.Reference<GeckoVariant>> entries = registries.get(ModRegistryKeys.GECKO_VARIANT).streamEntries();
+        Stream<RegistryEntry.Reference<GeckoVariant>> entries = registries.getOrThrow(ModRegistryKeys.GECKO_VARIANT).streamEntries();
         List<RegistryEntry.Reference<GeckoVariant>> list = new ArrayList<>();
         entries.forEach((entry) -> {
             if (entry.value().spawnsNaturally()) {

@@ -17,7 +17,7 @@ public abstract class LivingEntityMixin {
 
     @Shadow @Nullable public abstract StatusEffectInstance getStatusEffect(RegistryEntry<StatusEffect> effect);
 
-    @ModifyVariable(method = "damage(Lnet/minecraft/entity/damage/DamageSource;F)Z", at = @At("HEAD"), argsOnly = true)
+    @ModifyVariable(method = "damage(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/entity/damage/DamageSource;F)Z", at = @At("HEAD"), argsOnly = true)
     private float gekosmagic$damage(float amount) {
         if (this.hasStatusEffect(ModEffects.VULNERABILITY)) {
             return amount + (amount * (0.15f * this.getStatusEffect(ModEffects.VULNERABILITY).getAmplifier() + 1));

@@ -1,6 +1,5 @@
 package com.gekocaretaker.gekosmagic.block.entity;
 
-import com.gekocaretaker.gekosmagic.Gekosmagic;
 import com.gekocaretaker.gekosmagic.block.AlchemyStandBlock;
 import com.gekocaretaker.gekosmagic.elixir.Essence;
 import com.gekocaretaker.gekosmagic.elixir.EssenceContainer;
@@ -8,7 +7,8 @@ import com.gekocaretaker.gekosmagic.elixir.Essences;
 import com.gekocaretaker.gekosmagic.item.ElixirItem;
 import com.gekocaretaker.gekosmagic.item.ModItems;
 import com.gekocaretaker.gekosmagic.network.EssenceContainerPayload;
-import com.gekocaretaker.gekosmagic.recipe.AlchemyRecipeRegistry;
+import com.gekocaretaker.gekosmagic.recipe.*;
+import com.gekocaretaker.gekosmagic.recipe.input.AlchemyRecipeInput;
 import com.gekocaretaker.gekosmagic.registry.ModRegistries;
 import com.gekocaretaker.gekosmagic.screen.AlchemyStandScreenHandler;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
@@ -26,6 +26,9 @@ import net.minecraft.nbt.NbtList;
 import net.minecraft.network.listener.ClientPlayPacketListener;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
+import net.minecraft.recipe.RecipeEntry;
+import net.minecraft.recipe.ServerRecipeManager;
+import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.screen.PropertyDelegate;
@@ -42,6 +45,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Optional;
 
 public class AlchemyStandBlockEntity extends LockableContainerBlockEntity implements ExtendedScreenHandlerFactory<BlockPos>, SidedInventory {
     private static final int INPUT_SLOT_INDEX = 3;
@@ -60,6 +64,10 @@ public class AlchemyStandBlockEntity extends LockableContainerBlockEntity implem
     int selectedIndex = 0;
     private boolean[] slotsEmptyLastTick;
     protected final PropertyDelegate propertyDelegate;
+    private final ServerRecipeManager.MatchGetter<AlchemyRecipeInput, ElixirRecipe> elixirRecipeMatchGetter;
+    private final ServerRecipeManager.MatchGetter<AlchemyRecipeInput, ItemAlchemyRecipe> itemAlchemyRecipeMatchGetter;
+    private final ServerRecipeManager.MatchGetter<AlchemyRecipeInput, BasicAlchemyRecipe> basicAlchemyRecipeMatchGetter;
+    private final ServerRecipeManager.MatchGetter<AlchemyRecipeInput, AdvancedAlchemyRecipe> advancedAlchemyRecipeMatchGetter;
 
     public AlchemyStandBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntityTypes.ALCHEMY_STAND, pos, state);
@@ -93,6 +101,10 @@ public class AlchemyStandBlockEntity extends LockableContainerBlockEntity implem
                 return 3;
             }
         };
+        this.elixirRecipeMatchGetter = ServerRecipeManager.createCachedMatchGetter(ModRecipeTypes.ELIXIR);
+        this.itemAlchemyRecipeMatchGetter = ServerRecipeManager.createCachedMatchGetter(ModRecipeTypes.ITEM_ALCHEMY);
+        this.basicAlchemyRecipeMatchGetter = ServerRecipeManager.createCachedMatchGetter(ModRecipeTypes.BASIC_ALCHEMY);
+        this.advancedAlchemyRecipeMatchGetter = ServerRecipeManager.createCachedMatchGetter(ModRecipeTypes.ADVANCED_ALCHEMY);
     }
 
     @Override
@@ -116,55 +128,57 @@ public class AlchemyStandBlockEntity extends LockableContainerBlockEntity implem
     }
 
     public static void tick(World world, BlockPos pos, BlockState state, AlchemyStandBlockEntity blockEntity) {
-        ItemStack fuelStack = blockEntity.inventory.get(FUEL_SLOT_INDEX);
-        ItemStack inputStack = blockEntity.inventory.get(INPUT_SLOT_INDEX);
+        if (world instanceof ServerWorld serverWorld) {
+            ItemStack fuelStack = blockEntity.inventory.get(FUEL_SLOT_INDEX);
+            ItemStack inputStack = blockEntity.inventory.get(INPUT_SLOT_INDEX);
 
-        fuelTick(fuelStack, world, pos, state, blockEntity);
-        inputTick(inputStack, world, pos, state, blockEntity);
+            fuelTick(fuelStack, serverWorld, pos, state, blockEntity);
+            inputTick(inputStack, serverWorld, pos, state, blockEntity);
 
-        if (blockEntity.selectedIndex < 0) {
-            blockEntity.selectedIndex = 0;
-        } else if (blockEntity.selectedIndex >= blockEntity.essences.size()) {
-            blockEntity.selectedIndex = blockEntity.essences.size() - 1;
-        }
+            if (blockEntity.selectedIndex < 0) {
+                blockEntity.selectedIndex = 0;
+            } else if (blockEntity.selectedIndex >= blockEntity.essences.size()) {
+                blockEntity.selectedIndex = blockEntity.essences.size() - 1;
+            }
 
-        if (!blockEntity.essences.isEmpty()) {
-            boolean craftingPossible = canCraft(world, blockEntity.essences.get(blockEntity.selectedIndex), blockEntity.inventory, state);
-            boolean brewing = blockEntity.brewTime > 0;
-            if (brewing) {
-                --blockEntity.brewTime;
-                boolean finishedBrewing = blockEntity.brewTime == 0;
-                if (craftingPossible && finishedBrewing) {
-                    craft(world, pos, blockEntity.essences, blockEntity.selectedIndex, blockEntity.inventory);
-                } else if (!craftingPossible) {
-                    blockEntity.brewTime = 0;
+            if (!blockEntity.essences.isEmpty()) {
+                boolean craftingPossible = canCraft(serverWorld, blockEntity, state);
+                boolean brewing = blockEntity.brewTime > 0;
+                if (brewing) {
+                    --blockEntity.brewTime;
+                    boolean finishedBrewing = blockEntity.brewTime == 0;
+                    if (craftingPossible && finishedBrewing) {
+                        craft(serverWorld, blockEntity, pos, blockEntity.essences, blockEntity.inventory);
+                    } else if (!craftingPossible) {
+                        blockEntity.brewTime = 0;
+                    }
+
+                    markDirty(world, pos, state);
+                } else if (craftingPossible && blockEntity.fuel > 0) {
+                    --blockEntity.fuel;
+                    blockEntity.brewTime = 400;
+                    markDirty(world, pos, state);
+                }
+            }
+
+            boolean[] slotsEmpty = blockEntity.getSlotsEmpty();
+            if (!Arrays.equals(slotsEmpty, blockEntity.slotsEmptyLastTick)) {
+                blockEntity.slotsEmptyLastTick = slotsEmpty;
+                BlockState blockState = state;
+                if (!(blockState.getBlock() instanceof AlchemyStandBlock)) {
+                    return;
                 }
 
-                markDirty(world, pos, state);
-            } else if (craftingPossible && blockEntity.fuel > 0) {
-                --blockEntity.fuel;
-                blockEntity.brewTime = 400;
-                markDirty(world, pos, state);
-            }
-        }
+                for (int i = 0; i < AlchemyStandBlock.BOTTLE_PROPERTIES.length; i++) {
+                    blockState = blockState.with(AlchemyStandBlock.BOTTLE_PROPERTIES[i], slotsEmpty[i]);
+                }
 
-        boolean[] slotsEmpty = blockEntity.getSlotsEmpty();
-        if (!Arrays.equals(slotsEmpty, blockEntity.slotsEmptyLastTick)) {
-            blockEntity.slotsEmptyLastTick = slotsEmpty;
-            BlockState blockState = state;
-            if (!(blockState.getBlock() instanceof AlchemyStandBlock)) {
-                return;
+                world.setBlockState(pos, blockState, 2);
             }
-
-            for (int i = 0; i < AlchemyStandBlock.BOTTLE_PROPERTIES.length; i++) {
-                blockState = blockState.with(AlchemyStandBlock.BOTTLE_PROPERTIES[i], slotsEmpty[i]);
-            }
-
-            world.setBlockState(pos, blockState, 2);
         }
     }
 
-    private static void fuelTick(ItemStack itemStack, World world, BlockPos pos, BlockState state, AlchemyStandBlockEntity blockEntity) {
+    private static void fuelTick(ItemStack itemStack, ServerWorld world, BlockPos pos, BlockState state, AlchemyStandBlockEntity blockEntity) {
         if (blockEntity.fuel <= 0 && itemStack.isOf(Items.BLAZE_POWDER)) {
             blockEntity.fuel = 20;
             itemStack.decrement(1);
@@ -172,7 +186,7 @@ public class AlchemyStandBlockEntity extends LockableContainerBlockEntity implem
         }
     }
 
-    private static void inputTick(ItemStack inputStack, World world, BlockPos pos, BlockState state, AlchemyStandBlockEntity blockEntity) {
+    private static void inputTick(ItemStack inputStack, ServerWorld world, BlockPos pos, BlockState state, AlchemyStandBlockEntity blockEntity) {
         if (blockEntity.inputCooldown == 0) {
             boolean essenceContainerExists = false;
             for (EssenceContainer essenceContainer : blockEntity.essences) {
@@ -222,42 +236,84 @@ public class AlchemyStandBlockEntity extends LockableContainerBlockEntity implem
         return booleans;
     }
 
-    private static boolean canCraft(World world, EssenceContainer selectedEssenceContainer, DefaultedList<ItemStack> slots, BlockState state) {
+    private static boolean canCraft(ServerWorld world, AlchemyStandBlockEntity blockEntity, BlockState state) {
+        EssenceContainer selectedEssenceContainer = blockEntity.essences.get(blockEntity.selectedIndex);
+        DefaultedList<ItemStack> slots = blockEntity.inventory;
+
         Essence essence = Essences.AIR;
         if (selectedEssenceContainer.isOf(essence)) {
-            return false;
-        } else if (!Gekosmagic.alchemyRecipeRegistry.isValidIngredient(world, selectedEssenceContainer.getEssence())) {
             return false;
         } else if (!state.get(AlchemyStandBlock.POWERED)) {
             return false;
         } else {
             for (int i = 0; i < 3; ++i) {
                 ItemStack itemStack = slots.get(i);
-                if (!itemStack.isEmpty() && Gekosmagic.alchemyRecipeRegistry.hasRecipe(world, itemStack, selectedEssenceContainer.getEssence())) {
-                    return true;
+                if (!itemStack.isEmpty()) {
+                    AlchemyRecipeInput alchemyRecipeInput = new AlchemyRecipeInput(selectedEssenceContainer, itemStack);
+                    Optional<RecipeEntry<ItemAlchemyRecipe>> itemRecipeEntry = blockEntity.itemAlchemyRecipeMatchGetter.getFirstMatch(alchemyRecipeInput, world);
+                    if (itemRecipeEntry.isPresent() && itemRecipeEntry.get().value().matches(alchemyRecipeInput, world)) {
+                        return true;
+                    }
+                    Optional<RecipeEntry<AdvancedAlchemyRecipe>> advancedAlchemyRecipeEntry = blockEntity.advancedAlchemyRecipeMatchGetter.getFirstMatch(alchemyRecipeInput, world);
+                    if (advancedAlchemyRecipeEntry.isPresent() && advancedAlchemyRecipeEntry.get().value().matches(alchemyRecipeInput, world)) {
+                        return true;
+                    }
+                    Optional<RecipeEntry<BasicAlchemyRecipe>> basicAlchemyRecipeEntry = blockEntity.basicAlchemyRecipeMatchGetter.getFirstMatch(alchemyRecipeInput, world);
+                    if (basicAlchemyRecipeEntry.isPresent() && basicAlchemyRecipeEntry.get().value().matches(alchemyRecipeInput, world)) {
+                        return true;
+                    }
+                    Optional<RecipeEntry<ElixirRecipe>> elixirRecipeEntry = blockEntity.elixirRecipeMatchGetter.getFirstMatch(alchemyRecipeInput, world);
+                    if (elixirRecipeEntry.isPresent() && elixirRecipeEntry.get().value().matches(alchemyRecipeInput, world)) {
+                        return true;
+                    }
                 }
+                /*if (!itemStack.isEmpty() && Gekosmagic.alchemyRecipeRegistry.hasRecipe(world, itemStack, selectedEssenceContainer.getEssence())) {
+                    return true;
+                }*/
             }
 
             return false;
         }
     }
 
-    private static void craft(World world, BlockPos pos, ArrayList<EssenceContainer> essences, int selectedIndex, DefaultedList<ItemStack> slots) {
-        AlchemyRecipeRegistry alchemyRecipeRegistry = Gekosmagic.alchemyRecipeRegistry;
-        EssenceContainer essenceContainer = essences.get(selectedIndex);
+    private static void craft(ServerWorld world, AlchemyStandBlockEntity blockEntity, BlockPos pos, ArrayList<EssenceContainer> essences, DefaultedList<ItemStack> slots) {
+        //AlchemyRecipeRegistry alchemyRecipeRegistry = Gekosmagic.alchemyRecipeRegistry;
+        DynamicRegistryManager dynamicRegistryManager = world.getRegistryManager();
+        EssenceContainer essenceContainer = blockEntity.essences.get(blockEntity.selectedIndex);
 
         for (int i = 0; i < 3; i++) {
-            slots.set(i, alchemyRecipeRegistry.craft(world, essenceContainer.getEssence(), slots.get(i)));
+            ItemStack itemStack = slots.get(i);
+            if (!itemStack.isEmpty()) {
+                AlchemyRecipeInput alchemyRecipeInput = new AlchemyRecipeInput(essenceContainer, itemStack);
+                Optional<RecipeEntry<ItemAlchemyRecipe>> itemAlchemyRecipeEntry = blockEntity.itemAlchemyRecipeMatchGetter.getFirstMatch(alchemyRecipeInput, world);
+                if (itemAlchemyRecipeEntry.isPresent() && itemAlchemyRecipeEntry.get().value().matches(alchemyRecipeInput, world)) {
+                    slots.set(i, itemAlchemyRecipeEntry.get().value().craft(alchemyRecipeInput, dynamicRegistryManager));
+                }
+                Optional<RecipeEntry<AdvancedAlchemyRecipe>> advancedAlchemyRecipeEntry = blockEntity.advancedAlchemyRecipeMatchGetter.getFirstMatch(alchemyRecipeInput, world);
+                if (advancedAlchemyRecipeEntry.isPresent() && advancedAlchemyRecipeEntry.get().value().matches(alchemyRecipeInput, world)) {
+                    slots.set(i, advancedAlchemyRecipeEntry.get().value().craft(alchemyRecipeInput, dynamicRegistryManager));
+                }
+                Optional<RecipeEntry<BasicAlchemyRecipe>> basicAlchemyRecipeEntry = blockEntity.basicAlchemyRecipeMatchGetter.getFirstMatch(alchemyRecipeInput, world);
+                if (basicAlchemyRecipeEntry.isPresent() && basicAlchemyRecipeEntry.get().value().matches(alchemyRecipeInput, world)) {
+                    slots.set(i, basicAlchemyRecipeEntry.get().value().craft(alchemyRecipeInput, dynamicRegistryManager));
+                }
+                Optional<RecipeEntry<ElixirRecipe>> elixirRecipeEntry = blockEntity.elixirRecipeMatchGetter.getFirstMatch(alchemyRecipeInput, world);
+                if (elixirRecipeEntry.isPresent() && elixirRecipeEntry.get().value().matches(alchemyRecipeInput, world)) {
+                    slots.set(i, elixirRecipeEntry.get().value().craft(alchemyRecipeInput, dynamicRegistryManager));
+                }
+            }
+            //slots.set(i, alchemyRecipeRegistry.craft(world, essenceContainer.getEssence(), slots.get(i)));
         }
 
         essenceContainer.decrement(1);
         if (!essences.isEmpty()) {
-            for (ServerPlayerEntity player : PlayerLookup.tracking((ServerWorld) world, pos)) {
+            for (ServerPlayerEntity player : PlayerLookup.tracking( world, pos)) {
                 ServerPlayNetworking.send(player, new EssenceContainerPayload(essences, pos));
             }
         }
 
-        world.getBlockEntity(pos).markDirty();
+        //world.getBlockEntity(pos).markDirty();
+        blockEntity.markDirty();
         world.updateListeners(pos, world.getBlockState(pos), world.getBlockState(pos), 0);
         world.syncWorldEvent(1035, pos, 0);
     }

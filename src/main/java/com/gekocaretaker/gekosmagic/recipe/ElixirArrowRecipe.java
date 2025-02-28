@@ -58,19 +58,15 @@ public class ElixirArrowRecipe extends SpecialCraftingRecipe {
             ItemStack itemStack1 = new ItemStack(Items.TIPPED_ARROW, 8);
             List<StatusEffectInstance> effects = new ArrayList<>();
             itemStack.get(ModDataComponentTypes.ELIXIR_CONTENTS).forEachEffect(effects::add);
-            PotionContentsComponent potionContentsComponent = new PotionContentsComponent(Optional.empty(), Optional.empty(), effects);
+            // TODO: PotionContentsComponent needs a string for the name.
+            PotionContentsComponent potionContentsComponent = new PotionContentsComponent(Optional.empty(), Optional.empty(), effects, Optional.empty());
             itemStack1.set(DataComponentTypes.POTION_CONTENTS, potionContentsComponent);
             return itemStack1;
         }
     }
 
     @Override
-    public boolean fits(int width, int height) {
-        return width >= 3 && height >= 3;
-    }
-
-    @Override
-    public RecipeSerializer<?> getSerializer() {
+    public RecipeSerializer<? extends SpecialCraftingRecipe> getSerializer() {
         return ModRecipeSerializers.ELIXIR_ARROW;
     }
 }

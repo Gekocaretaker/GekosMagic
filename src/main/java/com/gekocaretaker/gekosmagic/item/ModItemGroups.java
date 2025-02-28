@@ -14,13 +14,11 @@ import net.minecraft.registry.*;
 import net.minecraft.text.Text;
 
 public class ModItemGroups {
-    public static ItemStack FAST_REEL_ENCHANTMENT = new ItemStack(Items.ENCHANTED_BOOK);
-
     public static final RegistryKey<ItemGroup> ELIXIRS_KEY = RegistryKey.of(Registries.ITEM_GROUP.getKey(), Gekosmagic.identify("elixirs"));
     public static final ItemGroup ELIXIRS = FabricItemGroup.builder()
             .icon(() -> new ItemStack(ModItems.ELIXIR))
             .entries((displayContext, entries) -> {
-                displayContext.lookup().getOptionalWrapper(ModRegistryKeys.ELIXIR).ifPresent((wrapper) -> {
+                displayContext.lookup().getOptional(ModRegistryKeys.ELIXIR).ifPresent((wrapper) -> {
                     addElixirs(entries, wrapper, ModItems.ELIXIR);
                     addElixirs(entries, wrapper, ModItems.SPLASH_ELIXIR);
                     addElixirs(entries, wrapper, ModItems.LINGERING_ELIXIR);
@@ -30,52 +28,48 @@ public class ModItemGroups {
                     addElixirs(entries, wrapper, ModItems.BLAND_ELIXIR);
                     addElixirs(entries, wrapper, ModItems.DIFFUSING_ELIXIR);
                 });
-
-                FAST_REEL_ENCHANTMENT.addEnchantment(
-                    displayContext.lookup().getWrapperOrThrow(RegistryKeys.ENCHANTMENT).getOrThrow(ModEnchantments.FAST_REEL), 3
-                );
             })
             .displayName(Text.translatable("itemGroup.gekosmagic.elixirs"))
             .noRenderedName()
             .build();
 
     public static final ItemGroup ELIXIRS_GENERIC = new ItemSubGroup.Builder(ELIXIRS, Gekosmagic.identify("generic_elixirs"), Text.translatable("itemGroup.gekosmagic.elixirs.generic")).entries((displayContext, entries) -> {
-        displayContext.lookup().getOptionalWrapper(ModRegistryKeys.ELIXIR).ifPresent((wrapper) -> {
+        displayContext.lookup().getOptional(ModRegistryKeys.ELIXIR).ifPresent((wrapper) -> {
             addElixirs(entries, wrapper, ModItems.ELIXIR);
         });
     }).build();
     public static final ItemGroup ELIXIRS_SPLASH = new ItemSubGroup.Builder(ELIXIRS, Gekosmagic.identify("splash_elixirs"), Text.translatable("itemGroup.gekosmagic.elixirs.splash")).entries((displayContext, entries) -> {
-        displayContext.lookup().getOptionalWrapper(ModRegistryKeys.ELIXIR).ifPresent((wrapper) -> {
+        displayContext.lookup().getOptional(ModRegistryKeys.ELIXIR).ifPresent((wrapper) -> {
             addElixirs(entries, wrapper, ModItems.SPLASH_ELIXIR);
         });
     }).build();
     public static final ItemGroup ELIXIRS_LINGERING = new ItemSubGroup.Builder(ELIXIRS, Gekosmagic.identify("lingering_elixirs"), Text.translatable("itemGroup.gekosmagic.elixirs.lingering")).entries((displayContext, entries) -> {
-        displayContext.lookup().getOptionalWrapper(ModRegistryKeys.ELIXIR).ifPresent((wrapper) -> {
+        displayContext.lookup().getOptional(ModRegistryKeys.ELIXIR).ifPresent((wrapper) -> {
             addElixirs(entries, wrapper, ModItems.LINGERING_ELIXIR);
         });
     }).build();
     public static final ItemGroup ELIXIRS_BUTTERED = new ItemSubGroup.Builder(ELIXIRS, Gekosmagic.identify("buttered_elixirs"), Text.translatable("itemGroup.gekosmagic.elixirs.buttered")).entries((displayContext, entries) -> {
-        displayContext.lookup().getOptionalWrapper(ModRegistryKeys.ELIXIR).ifPresent((wrapper) -> {
+        displayContext.lookup().getOptional(ModRegistryKeys.ELIXIR).ifPresent((wrapper) -> {
             addElixirs(entries, wrapper, ModItems.BUTTERED_ELIXIR);
         });
     }).build();
     public static final ItemGroup ELIXIRS_CLEAR = new ItemSubGroup.Builder(ELIXIRS, Gekosmagic.identify("clear_elixirs"), Text.translatable("itemGroup.gekosmagic.elixirs.clear")).entries((displayContext, entries) -> {
-        displayContext.lookup().getOptionalWrapper(ModRegistryKeys.ELIXIR).ifPresent((wrapper) -> {
+        displayContext.lookup().getOptional(ModRegistryKeys.ELIXIR).ifPresent((wrapper) -> {
             addElixirs(entries, wrapper, ModItems.CLEAR_ELIXIR);
         });
     }).build();
     public static final ItemGroup ELIXIRS_UNINTERESTING = new ItemSubGroup.Builder(ELIXIRS, Gekosmagic.identify("uninteresting_elixirs"), Text.translatable("itemGroup.gekosmagic.elixirs.uninteresting")).entries((displayContext, entries) -> {
-        displayContext.lookup().getOptionalWrapper(ModRegistryKeys.ELIXIR).ifPresent((wrapper) -> {
+        displayContext.lookup().getOptional(ModRegistryKeys.ELIXIR).ifPresent((wrapper) -> {
             addElixirs(entries, wrapper, ModItems.UNINTERESTING_ELIXIR);
         });
     }).build();
     public static final ItemGroup ELIXIRS_BLAND = new ItemSubGroup.Builder(ELIXIRS, Gekosmagic.identify("elixirs_bland"), Text.translatable("itemGroup.gekosmagic.elixirs.bland")).entries((displayContext, entries) -> {
-        displayContext.lookup().getOptionalWrapper(ModRegistryKeys.ELIXIR).ifPresent((wrapper) -> {
+        displayContext.lookup().getOptional(ModRegistryKeys.ELIXIR).ifPresent((wrapper) -> {
             addElixirs(entries, wrapper, ModItems.BLAND_ELIXIR);
         });
     }).build();
     public static final ItemGroup ELIXIRS_DIFFUSING = new ItemSubGroup.Builder(ELIXIRS, Gekosmagic.identify("diffusing_elixirs"), Text.translatable("itemGroup.gekosmagic.elixirs.diffusing")).entries((displayContext, entries) -> {
-        displayContext.lookup().getOptionalWrapper(ModRegistryKeys.ELIXIR).ifPresent((wrapper) -> {
+        displayContext.lookup().getOptional(ModRegistryKeys.ELIXIR).ifPresent((wrapper) -> {
             addElixirs(entries, wrapper, ModItems.DIFFUSING_ELIXIR);
         });
     }).build();

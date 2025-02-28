@@ -3,44 +3,44 @@ package com.gekocaretaker.gekosmagic.recipe;
 import com.gekocaretaker.gekosmagic.component.type.ElixirContentsComponent;
 import com.gekocaretaker.gekosmagic.elixir.Essence;
 import com.gekocaretaker.gekosmagic.elixir.Elixir;
+import com.gekocaretaker.gekosmagic.item.ModItems;
+import com.gekocaretaker.gekosmagic.recipe.input.AlchemyRecipeInput;
 import net.minecraft.item.ItemStack;
-import net.minecraft.recipe.Recipe;
-import net.minecraft.recipe.RecipeSerializer;
-import net.minecraft.recipe.RecipeType;
-import net.minecraft.recipe.input.RecipeInput;
+import net.minecraft.recipe.*;
+import net.minecraft.recipe.book.RecipeBookCategory;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.world.World;
 
 public record BasicAlchemyRecipe(RegistryEntry<Elixir> from, RegistryEntry<Essence> ingredient, ElixirContentsComponent to,
-                                 String translation) implements Recipe<RecipeInput> {
+                                 String translation) implements Recipe<AlchemyRecipeInput> {
     @Override
-    public boolean matches(RecipeInput input, World world) {
-        return false;
+    public boolean matches(AlchemyRecipeInput input, World world) {
+        return input.matchesContents(new ElixirContentsComponent(this.from)) && input.getEssenceContainer().isOf(this.ingredient);
     }
 
     @Override
-    public ItemStack craft(RecipeInput input, RegistryWrapper.WrapperLookup lookup) {
-        return ItemStack.EMPTY;
+    public ItemStack craft(AlchemyRecipeInput input, RegistryWrapper.WrapperLookup registries) {
+        return ElixirContentsComponent.createStack(input.getItemStack().getItem(), this.to, input.getItemStack().getItem().getTranslationKey() + this.translation, input.getItemStack().getCount());
     }
 
     @Override
-    public boolean fits(int width, int height) {
-        return false;
+    public IngredientPlacement getIngredientPlacement() {
+        return IngredientPlacement.forSingleSlot(Ingredient.ofItem(ModItems.ELIXIR));
     }
 
     @Override
-    public ItemStack getResult(RegistryWrapper.WrapperLookup registriesLookup) {
-        return ItemStack.EMPTY;
+    public RecipeBookCategory getRecipeBookCategory() {
+        return new RecipeBookCategory();
     }
 
     @Override
-    public RecipeSerializer<?> getSerializer() {
+    public RecipeSerializer<? extends Recipe<AlchemyRecipeInput>> getSerializer() {
         return ModRecipeSerializers.BASIC_ALCHEMY;
     }
 
     @Override
-    public RecipeType<?> getType() {
+    public RecipeType<? extends Recipe<AlchemyRecipeInput>> getType() {
         return Type.INSTANCE;
     }
 

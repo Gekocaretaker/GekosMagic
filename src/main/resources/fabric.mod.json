@@ -20,9 +20,6 @@
     ],
     "fabric-datagen": [
       "com.gekocaretaker.gekosmagic.datagen.GekosmagicDataGen"
-    ],
-    "emi": [
-      "com.gekocaretaker.gekosmagic.compat.emi.GekosmagicEmi"
     ]
   },
   "mixins": [
@@ -37,7 +34,7 @@
     "fabricloader": ">=${loader_version}",
     "fabric": "*",
     "minecraft": "${minecraft_version}",
-    "trimmed": ">=3.0.0",
-    "fractal": ">=1.1.12+1.21"
+    "trimmed": ">=4.0.1",
+    "fractal": ">=1.4.0+1.21.3"
   }
 }

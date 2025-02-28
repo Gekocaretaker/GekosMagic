@@ -1,6 +1,5 @@
 package com.gekocaretaker.gekosmagic.datagen.book.magic.enchantments;
 
-import com.gekocaretaker.gekosmagic.item.ModItemGroups;
 import com.klikli_dev.modonomicon.api.datagen.CategoryProviderBase;
 import com.klikli_dev.modonomicon.api.datagen.EntryBackground;
 import com.klikli_dev.modonomicon.api.datagen.EntryProvider;
@@ -10,22 +9,21 @@ import com.klikli_dev.modonomicon.api.datagen.book.page.BookTextPageModel;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.recipe.Ingredient;
 
 public class FastReelEntry extends EntryProvider {
     public static final String ID = "fast_reel";
+    public static ItemStack DISPLAY_ITEM;
 
     public FastReelEntry(CategoryProviderBase parent) {
         super(parent);
+        DISPLAY_ITEM = new ItemStack(Items.ENCHANTED_BOOK);
     }
 
     @Override
     protected void generatePages() {
         this.page("intro", () -> BookSpotlightPageModel.create()
                 .withTitle(this.context().pageTitle())
-                .withItem(Ingredient.ofStacks(
-                        ModItemGroups.FAST_REEL_ENCHANTMENT
-                ))
+                .withItem(DISPLAY_ITEM)
                 .withText(this.context().pageText()));
         this.pageTitle("Fast Reel");
         this.pageText(

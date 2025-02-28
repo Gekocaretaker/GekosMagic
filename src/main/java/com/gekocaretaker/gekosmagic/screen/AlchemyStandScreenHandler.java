@@ -1,13 +1,11 @@
 package com.gekocaretaker.gekosmagic.screen;
 
-import com.gekocaretaker.gekosmagic.Gekosmagic;
 import com.gekocaretaker.gekosmagic.block.entity.AlchemyStandBlockEntity;
 import com.gekocaretaker.gekosmagic.component.ModDataComponentTypes;
 import com.gekocaretaker.gekosmagic.component.type.ElixirContentsComponent;
 import com.gekocaretaker.gekosmagic.elixir.Elixir;
 import com.gekocaretaker.gekosmagic.elixir.EssenceContainer;
 import com.gekocaretaker.gekosmagic.item.ElixirItem;
-import com.gekocaretaker.gekosmagic.recipe.AlchemyRecipeRegistry;
 import net.minecraft.advancement.criterion.Criteria;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
@@ -48,11 +46,10 @@ public class AlchemyStandScreenHandler extends ScreenHandler {
         this.inventoryChangeListener = () -> {
         };
         this.essenceContainers = new ArrayList<>();
-        AlchemyRecipeRegistry alchemyRecipeRegistry = Gekosmagic.alchemyRecipeRegistry;
         this.addSlot(new ElixirSlot(inventory, 0, 51, 51));
         this.addSlot(new ElixirSlot(inventory, 1, 74, 58));
         this.addSlot(new ElixirSlot(inventory, 2, 97, 51));
-        this.ingredientSlot = this.addSlot(new IngredientSlot(alchemyRecipeRegistry, inventory, 3, 94, 17));
+        this.ingredientSlot = this.addSlot(new IngredientSlot(inventory, 3, 94, 17));
         this.addSlot(new FuelSlot(inventory, 4, 17, 17));
         this.addProperties(propertyDelegate);
 
@@ -204,11 +201,9 @@ public class AlchemyStandScreenHandler extends ScreenHandler {
     }
 
     private class IngredientSlot extends Slot {
-        private final AlchemyRecipeRegistry alchemyRecipeRegistry;
 
-        public IngredientSlot(AlchemyRecipeRegistry alchemyRecipeRegistry, Inventory inventory, int index, int x, int y) {
+        public IngredientSlot(Inventory inventory, int index, int x, int y) {
             super(inventory, index, x, y);
-            this.alchemyRecipeRegistry = alchemyRecipeRegistry;
         }
 
         @Override
@@ -219,7 +214,7 @@ public class AlchemyStandScreenHandler extends ScreenHandler {
 
         @Override
         public boolean canInsert(ItemStack stack) {
-            return this.alchemyRecipeRegistry.isElixirIngredient(stack);
+            return Elixir.isElixirIngredient(stack);
         }
     }
 

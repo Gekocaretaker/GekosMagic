@@ -92,8 +92,8 @@ public class GeckoEntity extends TameableEntity implements VariantHolder<Registr
 
     public static DefaultAttributeContainer.Builder createGeckoAttributes() {
         return MobEntity.createMobAttributes()
-                .add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.2)
-                .add(EntityAttributes.GENERIC_MAX_HEALTH, 6.0);
+                .add(EntityAttributes.MOVEMENT_SPEED, 0.2)
+                .add(EntityAttributes.MAX_HEALTH, 6.0);
     }
 
     @Override
@@ -107,10 +107,10 @@ public class GeckoEntity extends TameableEntity implements VariantHolder<Registr
             this.scaleShedTime--;
         }
 
-        if (!this.getWorld().isClient && this.isAlive() && !this.isBaby() && this.scaleShedTime == 0) {
+        if (this.getWorld() instanceof ServerWorld serverWorld && this.isAlive() && !this.isBaby() && this.scaleShedTime == 0) {
             this.playSound(ModSounds.ENTITY_GECKO_SCALES_DROP, 1.0F, (this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1.0F);
             int scaleCount = this.random.nextInt(3) + 1;
-            this.dropStack(new ItemStack(this.getVariant().value().getScaleItem(), scaleCount));
+            this.dropStack(serverWorld, new ItemStack(this.getVariant().value().getScaleItem(), scaleCount));
             this.emitGameEvent(GameEvent.ENTITY_PLACE);
             this.hasFed = false;
             this.scaleShedTime--;
@@ -173,7 +173,7 @@ public class GeckoEntity extends TameableEntity implements VariantHolder<Registr
 
     @Nullable
     public GeckoEntity createChild(ServerWorld world, GeckoEntity entity) {
-        GeckoEntity geckoEntity = (GeckoEntity) ModEntities.GECKO.create(world);
+        GeckoEntity geckoEntity = (GeckoEntity) ModEntities.GECKO.create(world, SpawnReason.BREEDING);
         if (geckoEntity != null && entity instanceof GeckoEntity geckoEntity2) {
             if (this.random.nextBoolean()) {
                 geckoEntity.setVariant(this.getVariant());
@@ -198,7 +198,8 @@ public class GeckoEntity extends TameableEntity implements VariantHolder<Registr
     protected void initDataTracker(DataTracker.Builder builder) {
         super.initDataTracker(builder);
         builder.add(COLLAR_COLOR, DyeColor.RED.getId());
-        builder.add(VARIANT, this.getRegistryManager().get(ModRegistryKeys.GECKO_VARIANT).getEntry(GeckoVariants.DEFAULT).get());
+        builder.add(VARIANT, this.getRegistryManager().getOrThrow(ModRegistryKeys.GECKO_VARIANT).getEntry(GeckoVariants.DEFAULT.getValue()).get());
+        //builder.add(VARIANT, this.getRegistryManager().getOrThrow(ModRegistryKeys.GECKO_VARIANT).get(GeckoVariants.DEFAULT));
     }
 
     @Override
@@ -219,11 +220,11 @@ public class GeckoEntity extends TameableEntity implements VariantHolder<Registr
 
         if (nbt.contains("variant")) {
             Identifier variant = Identifier.of(nbt.getString("variant"));
-            Registry<GeckoVariant> registry = this.getRegistryManager().get(ModRegistryKeys.GECKO_VARIANT);
+            Registry<GeckoVariant> registry = this.getRegistryManager().getOrThrow(ModRegistryKeys.GECKO_VARIANT);
             if (registry.containsId(variant)) {
                 this.setVariant(registry.getEntry(variant).get());
             } else {
-                this.setVariant(registry.getEntry(GeckoVariants.DEFAULT).get());
+                this.setVariant(registry.getEntry(GeckoVariants.DEFAULT.getValue()).get());
             }
         }
 
@@ -238,7 +239,7 @@ public class GeckoEntity extends TameableEntity implements VariantHolder<Registr
 
     @Override
     public EntityData initialize(ServerWorldAccess world, LocalDifficulty difficulty, SpawnReason spawnReason, @Nullable EntityData entityData) {
-        this.setVariant(this.getRegistryManager().get(ModRegistryKeys.GECKO_VARIANT).entryOf(GeckoVariants.select(world.getRandom(), this.getRegistryManager()).registryKey()));
+        this.setVariant(this.getRegistryManager().getOrThrow(ModRegistryKeys.GECKO_VARIANT).getEntry(GeckoVariants.select(world.getRandom(), this.getRegistryManager()).registryKey().getValue()).get());
         return super.initialize(world, difficulty, spawnReason, entityData);
     }
 
@@ -266,24 +267,24 @@ public class GeckoEntity extends TameableEntity implements VariantHolder<Registr
     }
 
     @Override
-    public boolean damage(DamageSource source, float amount) {
-        if (this.isInvulnerableTo(source)) {
+    public boolean damage(ServerWorld world, DamageSource source, float amount) {
+        if (this.isInvulnerableTo(world, source)) {
             return false;
         } else {
             if (!this.getWorld().isClient) {
                 this.setSitting(false);
             }
-            return super.damage(source, amount);
+            return super.damage(world, source, amount);
         }
     }
 
     @Override
     protected void updateAttributesForTamed() {
         if (this.isTamed()) {
-            this.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(20.0);
+            this.getAttributeInstance(EntityAttributes.MAX_HEALTH).setBaseValue(20.0);
             this.setHealth(20.0F);
         } else {
-            this.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(6.0F);
+            this.getAttributeInstance(EntityAttributes.MAX_HEALTH).setBaseValue(6.0F);
         }
     }
 
@@ -302,7 +303,7 @@ public class GeckoEntity extends TameableEntity implements VariantHolder<Registr
                         this.setPersistent();
                     }
 
-                    return ActionResult.success(this.getWorld().isClient());
+                    return ActionResult.SUCCESS;
                 } else if (this.isBreedingItem(itemStack) && this.getHealth() < this.getMaxHealth()) {
                     if (!this.getWorld().isClient()) {
                         this.eat(player, hand, itemStack);
@@ -310,7 +311,7 @@ public class GeckoEntity extends TameableEntity implements VariantHolder<Registr
                         this.heal(foodComponent != null ? (float) foodComponent.nutrition() : 1.0F);
                     }
 
-                    return ActionResult.success(this.getWorld().isClient());
+                    return ActionResult.SUCCESS;
                 } else if (this.isSpecialFeedingItem(itemStack) && !this.hasFed) {
                     if (!this.getWorld().isClient()) {
                         this.eat(player, hand, itemStack);
@@ -318,14 +319,14 @@ public class GeckoEntity extends TameableEntity implements VariantHolder<Registr
                         this.scaleShedTime = 80;
                     }
 
-                    return ActionResult.success(this.getWorld().isClient());
+                    return ActionResult.SUCCESS;
                 }
             }
 
             actionResult = super.interactMob(player, hand);
             if (!actionResult.isAccepted()) {
                 this.setSitting(!this.isSitting());
-                return ActionResult.success(this.getWorld().isClient());
+                return ActionResult.SUCCESS;
             }
 
             return actionResult;
@@ -336,7 +337,7 @@ public class GeckoEntity extends TameableEntity implements VariantHolder<Registr
                 this.setPersistent();
             }
 
-            return ActionResult.success(this.getWorld().isClient());
+            return ActionResult.SUCCESS;
         }
 
         actionResult = super.interactMob(player, hand);

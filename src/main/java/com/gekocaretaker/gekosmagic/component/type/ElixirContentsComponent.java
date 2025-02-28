@@ -97,7 +97,8 @@ public record ElixirContentsComponent(Optional<RegistryEntry<Elixir>> elixir, Op
     public static PotionContentsComponent convertToPotionContentsComponent(ElixirContentsComponent contents) {
         List<StatusEffectInstance> effects = new ArrayList<>();
         contents.forEachEffect(effects::add);
-        return new PotionContentsComponent(Optional.empty(), Optional.empty(), effects);
+        // TODO: This now needs a string for the name. This means I can possibly transfer over the names from the elixir item to a PotionContentsComponent.
+        return new PotionContentsComponent(Optional.empty(), Optional.empty(), effects, Optional.empty());
     }
 
     public static ItemStack createPotionContentsStack(Item item, int count, ElixirContentsComponent contents) {
@@ -173,16 +174,16 @@ public record ElixirContentsComponent(Optional<RegistryEntry<Elixir>> elixir, Op
             if (statusEffectInstance.shouldShowParticles()) {
                 int color = statusEffectInstance.getEffectType().value().getColor();
                 int amp = statusEffectInstance.getAmplifier() + 1;
-                red += amp * ColorHelper.Argb.getRed(color);
-                green += amp * ColorHelper.Argb.getGreen(color);
-                blue += amp * ColorHelper.Argb.getBlue(color);
+                red += amp * ColorHelper.getRed(color);
+                green += amp * ColorHelper.getGreen(color);
+                blue += amp * ColorHelper.getBlue(color);
                 effectCount += amp;
             }
         }
         if (effectCount == 0) {
             return OptionalInt.empty();
         } else {
-            return OptionalInt.of(ColorHelper.Argb.getArgb(red / effectCount, green / effectCount, blue / effectCount));
+            return OptionalInt.of(ColorHelper.getArgb(red / effectCount, green / effectCount, blue / effectCount));
         }
     }
 

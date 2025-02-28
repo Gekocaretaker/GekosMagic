@@ -8,6 +8,8 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.SpawnGroup;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
 
 public class ModEntities {
     public static final EntityType<GeckoEntity> GECKO = register(GeckoEntity::new, SpawnGroup.AMBIENT, 0.75F, 0.5F, "gecko");
@@ -16,7 +18,7 @@ public class ModEntities {
     private static EntityType register(EntityType.EntityFactory entity, SpawnGroup group, float width, float height, String id) {
         return Registry.register(Registries.ENTITY_TYPE,
                 Gekosmagic.identify(id),
-                EntityType.Builder.create(entity, group).dimensions(width, height).build(id)
+                EntityType.Builder.create(entity, group).dimensions(width, height).build(RegistryKey.of(RegistryKeys.ENTITY_TYPE, Gekosmagic.identify(id)))
         );
     }
 

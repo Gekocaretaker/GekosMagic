@@ -10,6 +10,7 @@ import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.predicate.entity.EntityPredicates;
 import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.Nullable;
 
@@ -46,7 +47,10 @@ public class FleeEntityWithEffectGoal<T extends LivingEntity> extends Goal {
         this.inclusionSelector = inclusionSelector;
         this.fleeingEntityNavigation = mob.getNavigation();
         this.setControls(EnumSet.of(Control.MOVE));
-        this.withinRangePredicate = TargetPredicate.createAttackable().setBaseMaxDistance((double)distance).setPredicate(inclusionSelector.and(extraInclusionSelector));
+        //this.withinRangePredicate = TargetPredicate.createAttackable().setBaseMaxDistance((double) distance).setPredicate((TargetPredicate.EntityPredicate) inclusionSelector.and(extraInclusionSelector));
+        this.withinRangePredicate = TargetPredicate.createAttackable().setBaseMaxDistance((double) distance).setPredicate((entity, world) -> {
+            return inclusionSelector.test(entity) && extraInclusionSelector.test(entity);
+        });
         this.entityEffectToAvoid = effect;
     }
 
@@ -58,9 +62,11 @@ public class FleeEntityWithEffectGoal<T extends LivingEntity> extends Goal {
 
     @Override
     public boolean canStart() {
-        this.targetEntity = this.mob.getWorld().getClosestEntity(this.mob.getWorld().getEntitiesByClass(this.classToFleeFrom, this.mob.getBoundingBox().expand((double) this.fleeDistance, 3.0, (double) this.fleeDistance), (livingEntity) -> {
-            return livingEntity.hasStatusEffect(this.entityEffectToAvoid);
-        }), this.withinRangePredicate, this.mob, this.mob.getX(), this.mob.getY(), this.mob.getZ());
+        if (this.mob.getWorld() instanceof ServerWorld serverWorld) {
+            this.targetEntity = serverWorld.getClosestEntity(this.mob.getWorld().getEntitiesByClass(this.classToFleeFrom, this.mob.getBoundingBox().expand((double) this.fleeDistance, 3.0, (double) this.fleeDistance), (livingEntity) -> {
+                return livingEntity.hasStatusEffect(this.entityEffectToAvoid);
+            }), this.withinRangePredicate, this.mob, this.mob.getX(), this.mob.getY(), this.mob.getZ());
+        }
         if (this.targetEntity == null) {
             return false;
         } else {

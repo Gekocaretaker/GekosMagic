@@ -19,6 +19,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.tag.BlockTags;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
@@ -39,12 +40,12 @@ public class ElixirEntity extends ThrownItemEntity implements FlyingItemEntity {
         super(entityType, world);
     }
 
-    public ElixirEntity(World world, LivingEntity owner) {
-        super(ModEntities.ELIXIR, owner, world);
+    public ElixirEntity(EntityType<? extends ElixirEntity> entityType, double x, double y, double z, World world, ItemStack stack) {
+        super(entityType, x, y, z, world, stack);
     }
 
-    public ElixirEntity(World world, double x, double y, double z) {
-        super(ModEntities.ELIXIR, x, y, z, world);
+    public ElixirEntity(EntityType<? extends ElixirEntity> entityType, LivingEntity owner, World world, ItemStack stack) {
+        super(ModEntities.ELIXIR, owner, world, stack);
     }
 
     protected Item getDefaultItem() {
@@ -106,7 +107,9 @@ public class ElixirEntity extends ThrownItemEntity implements FlyingItemEntity {
             double d = this.squaredDistanceTo(livingEntity);
             if (d < 16.0) {
                 if (livingEntity.hurtByWater()) {
-                    livingEntity.damage(this.getDamageSources().indirectMagic(this, this.getOwner()), 1.0F);
+                    if (this.getWorld() instanceof ServerWorld serverWorld) {
+                        livingEntity.damage(serverWorld, this.getDamageSources().indirectMagic(this, this.getOwner()), 1.0F);
+                    }
                 }
 
                 if (livingEntity.isOnFire() && livingEntity.isAlive()) {
@@ -154,7 +157,9 @@ public class ElixirEntity extends ThrownItemEntity implements FlyingItemEntity {
                 for (StatusEffectInstance statusEffectInstance : effects) {
                     RegistryEntry<StatusEffect> registryEntry = statusEffectInstance.getEffectType();
                     if (registryEntry.value().isInstant()) {
-                        registryEntry.value().applyInstantEffect(this, this.getOwner(), livingEntity, statusEffectInstance.getAmplifier(), e);
+                        if (this.getWorld() instanceof ServerWorld serverWorld) {
+                            registryEntry.value().applyInstantEffect(serverWorld, this, this.getOwner(), livingEntity, statusEffectInstance.getAmplifier(), e);
+                        }
                     } else {
                         int i = statusEffectInstance.mapDuration((duration) -> (int) (e * (double) duration + 0.5));
                         StatusEffectInstance statusEffectInstance1 = new StatusEffectInstance(registryEntry, i, statusEffectInstance.getAmplifier(), statusEffectInstance.isAmbient(), statusEffectInstance.shouldShowParticles());

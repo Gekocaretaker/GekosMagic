@@ -1,5 +1,6 @@
 package com.gekocaretaker.gekosmagic.item;
 
+import com.gekocaretaker.gekosmagic.entity.ModEntities;
 import com.gekocaretaker.gekosmagic.entity.projectile.thrown.ElixirEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
@@ -7,8 +8,8 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ProjectileItem;
 import net.minecraft.stat.Stats;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
-import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Position;
 import net.minecraft.world.World;
@@ -19,10 +20,10 @@ public class ThrowableElixirItem extends ElixirItem implements ProjectileItem {
     }
 
     @Override
-    public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
+    public ActionResult use(World world, PlayerEntity user, Hand hand) {
         ItemStack itemStack = user.getStackInHand(hand);
         if (!world.isClient) {
-            ElixirEntity elixirEntity = new ElixirEntity(world, user);
+            ElixirEntity elixirEntity = new ElixirEntity(ModEntities.ELIXIR, user, world, itemStack);
             elixirEntity.setItem(itemStack);
             elixirEntity.setVelocity(user, user.getPitch(), user.getYaw(), -20.0F, 0.5F, 1.0F);
             world.spawnEntity(elixirEntity);
@@ -30,12 +31,12 @@ public class ThrowableElixirItem extends ElixirItem implements ProjectileItem {
 
         user.incrementStat(Stats.USED.getOrCreateStat(this));
         itemStack.decrementUnlessCreative(1, user);
-        return TypedActionResult.success(itemStack, world.isClient());
+        return ActionResult.SUCCESS;
     }
 
     @Override
     public ProjectileEntity createEntity(World world, Position pos, ItemStack stack, Direction direction) {
-        ElixirEntity elixirEntity = new ElixirEntity(world, pos.getX(), pos.getY(), pos.getZ());
+        ElixirEntity elixirEntity = new ElixirEntity(ModEntities.ELIXIR, pos.getX(), pos.getY(), pos.getZ(), world, stack);
         elixirEntity.setItem(stack);
         return elixirEntity;
     }

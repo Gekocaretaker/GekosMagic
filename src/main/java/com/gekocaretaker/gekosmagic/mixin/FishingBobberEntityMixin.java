@@ -34,7 +34,7 @@ public abstract class FishingBobberEntityMixin extends ProjectileEntity {
 
     @Unique
     private Vec3d gekosmagic$modifyVec3dWithFastReel(PlayerEntity player, Vec3d vec3d) {
-        RegistryEntry<Enchantment> fast_reel = player.getWorld().getRegistryManager().getWrapperOrThrow(RegistryKeys.ENCHANTMENT).getOrThrow(ModEnchantments.FAST_REEL);
+        RegistryEntry<Enchantment> fast_reel = player.getWorld().getRegistryManager().getOrThrow(RegistryKeys.ENCHANTMENT).getOrThrow(ModEnchantments.FAST_REEL);
         int level = player.getMainHandStack().getEnchantments().getLevel(fast_reel);
         if (level == 0) {
             level = player.getOffHandStack().getEnchantments().getLevel(fast_reel);

@@ -18,7 +18,7 @@ import net.minecraft.util.profiler.Profiler;
 
 import java.util.*;
 
-public class EssenceAssetLoader extends JsonDataLoader implements IdentifiableResourceReloadListener {
+public class EssenceAssetLoader extends JsonDataLoader<EssenceAssetLoader.EssenceEntry> implements IdentifiableResourceReloadListener {
     public static final String ID = "essences";
     public static final EssenceAssetLoader INSTANCE = new EssenceAssetLoader();
 
@@ -27,12 +27,10 @@ public class EssenceAssetLoader extends JsonDataLoader implements IdentifiableRe
     public static final int ESSENCE_CONTAINER_TEXTURE_SIZE = 16;
     public static final int ESSENCE_CONTAINER_FILL_TEXTURE_SIZE = 10;
 
-    public record EssenceEntry(Identifier essence,
-                               Identifier containerTextureIdentifier, int containerTextureSize,
+    public record EssenceEntry(Identifier containerTextureIdentifier, int containerTextureSize,
                                Identifier containerFillTextureIdentifier, int containerFillTextureSize) {
         public static final Codec<EssenceEntry> CODEC = RecordCodecBuilder.create((instance) -> {
             return instance.group(
-                    Identifier.CODEC.fieldOf("essence").forGetter(EssenceEntry::essence),
                     Identifier.CODEC.optionalFieldOf("container_texture", ESSENCE_CONTAINER_TEXTURE).forGetter(EssenceEntry::containerTextureIdentifier),
                     Codec.INT.optionalFieldOf("container_texture_size", ESSENCE_CONTAINER_TEXTURE_SIZE).forGetter(EssenceEntry::containerTextureSize),
                     Identifier.CODEC.optionalFieldOf("container_full_texture", ESSENCE_CONTAINER_FILL_TEXTURE).forGetter(EssenceEntry::containerFillTextureIdentifier),
@@ -40,8 +38,7 @@ public class EssenceAssetLoader extends JsonDataLoader implements IdentifiableRe
             ).apply(instance, EssenceEntry::new);
         });
 
-        public EssenceEntry(Identifier essence, Identifier containerTextureIdentifier, int containerTextureSize, Identifier containerFillTextureIdentifier, int containerFillTextureSize) {
-            this.essence = essence;
+        public EssenceEntry(Identifier containerTextureIdentifier, int containerTextureSize, Identifier containerFillTextureIdentifier, int containerFillTextureSize) {
             this.containerTextureIdentifier = containerTextureIdentifier.withPrefixedPath("textures/").withSuffixedPath(".png");
             this.containerTextureSize = containerTextureSize;
             this.containerFillTextureIdentifier = containerFillTextureIdentifier.withPrefixedPath("textures/").withSuffixedPath(".png");
@@ -49,10 +46,15 @@ public class EssenceAssetLoader extends JsonDataLoader implements IdentifiableRe
         }
     }
 
+    protected static final Map<Identifier, EssenceEntry> ESSENCE_RESOURCES = new HashMap<>();
+    protected static final EssenceEntry DEFAULT_ESSENCE_ENTRY = new EssenceEntry(
+            Gekosmagic.identify("gui/sprites/container/alchemy_stand/essence_container"), 16,
+            Gekosmagic.identify("gui/sprites/container/alchemy_stand/essence_container_fill"), 10
+    );
     protected static final List<EssenceEntry> ESSENCES = new ArrayList<>();
 
     private EssenceAssetLoader() {
-        super(new Gson(), ID);
+        super(EssenceEntry.CODEC, ID);
     }
 
     @Override
@@ -61,6 +63,13 @@ public class EssenceAssetLoader extends JsonDataLoader implements IdentifiableRe
     }
 
     @Override
+    protected void apply(Map<Identifier, EssenceEntry> prepared, ResourceManager manager, Profiler profiler) {
+        //ESSENCES.clear();
+        ESSENCE_RESOURCES.clear();
+        ESSENCE_RESOURCES.putAll(prepared);
+    }
+
+    /*@Override
     protected void apply(Map<Identifier, JsonElement> prepared, ResourceManager manager, Profiler profiler) {
         ESSENCES.clear();
         prepared.forEach(((identifier, jsonElement) -> {
@@ -74,10 +83,14 @@ public class EssenceAssetLoader extends JsonDataLoader implements IdentifiableRe
                 Gekosmagic.LOGGER.error("Essence Resource Entry '{}' could not be parsed.", identifier);
             }
         }));
-    }
+    }*/
 
     public static Quadruple<Identifier, Integer, Identifier, Integer> getTexturesByEssence(Essence essence) {
-        for (EssenceEntry entry : ESSENCES) {
+        EssenceEntry entry = ESSENCE_RESOURCES.getOrDefault(essence.id(), DEFAULT_ESSENCE_ENTRY);
+        return new Quadruple<>(entry.containerTextureIdentifier, entry.containerTextureSize,
+                entry.containerFillTextureIdentifier, entry.containerFillTextureSize);
+
+        /*for (EssenceEntry entry : ESSENCES) {
             if (Objects.equals(entry.essence().toString(), essence.id().toString())) {
                 return new Quadruple<>(entry.containerTextureIdentifier(), entry.containerTextureSize(), entry.containerFillTextureIdentifier(), entry.containerFillTextureSize());
             }
@@ -85,6 +98,6 @@ public class EssenceAssetLoader extends JsonDataLoader implements IdentifiableRe
 
         return new Quadruple<>(
                 ESSENCE_CONTAINER_TEXTURE, ESSENCE_CONTAINER_TEXTURE_SIZE,
-                ESSENCE_CONTAINER_FILL_TEXTURE, ESSENCE_CONTAINER_FILL_TEXTURE_SIZE);
+                ESSENCE_CONTAINER_FILL_TEXTURE, ESSENCE_CONTAINER_FILL_TEXTURE_SIZE);*/
     }
 }

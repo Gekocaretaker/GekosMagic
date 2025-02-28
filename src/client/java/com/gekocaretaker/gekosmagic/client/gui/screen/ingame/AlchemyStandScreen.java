@@ -13,6 +13,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.render.DiffuseLighting;
+import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.sound.PositionedSoundInstance;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.Item;
@@ -78,19 +79,19 @@ public class AlchemyStandScreen extends HandledScreen<AlchemyStandScreenHandler>
         int j = (this.height - this.backgroundHeight) / 2;
 
         // Background
-        context.drawTexture(TEXTURE, i, j, 0, 0, this.backgroundWidth, this.backgroundHeight);
+        context.drawTexture(RenderLayer::getGuiTextured, TEXTURE, i, j, 0.0F, 0.0F, this.backgroundWidth, this.backgroundHeight, 256, 256);
 
         // Fuel
         int k = this.handler.getFuel();
         int l = MathHelper.clamp((18 * k + 20 - 1 ) / 20, 0, 18);
         if (l > 0) {
-            context.drawGuiTexture(FUEL_LENGTH_TEXTURE, 18, 4, 0, 0, i + 55, j + 44, l, 4);
+            context.drawGuiTexture(RenderLayer::getGuiTextured, FUEL_LENGTH_TEXTURE, 18, 4, 0, 0, i + 55, j + 44, l, 4);
         }
 
         // Scroll
         int scrollPos = (int) (33.0F * this.scrollAmount);
         Identifier scrollIdTexture = this.shouldScroll() ? SCROLLER_TEXTURE : SCROLLER_DISABLED_TEXTURE;
-        context.drawGuiTexture(scrollIdTexture, i + SCROLLBAR_OFFSET_X, j + SCROLLBAR_OFFSET_Y + scrollPos, SCROLLBAR_WIDTH, SCROLLBAR_HEIGHT);
+        context.drawGuiTexture(RenderLayer::getGuiTextured, scrollIdTexture, i + SCROLLBAR_OFFSET_X, j + SCROLLBAR_OFFSET_Y + scrollPos, SCROLLBAR_WIDTH, SCROLLBAR_HEIGHT);
         DiffuseLighting.disableGuiDepthLighting();
 
         // Essence List
@@ -118,7 +119,7 @@ public class AlchemyStandScreen extends HandledScreen<AlchemyStandScreenHandler>
                     slotIdentifier = ESSENCE_SLOT_TEXTURE;
                 }
 
-                context.drawGuiTexture(slotIdentifier, q, r, ESSENCE_ENTRY_SIZE, ESSENCE_ENTRY_SIZE);
+                context.drawGuiTexture(RenderLayer::getGuiTextured, slotIdentifier, q, r, ESSENCE_ENTRY_SIZE, ESSENCE_ENTRY_SIZE);
                 drawEssenceOrb(context, this.handler.getEssences().get(p), q, r);
             }
         }
@@ -128,20 +129,20 @@ public class AlchemyStandScreen extends HandledScreen<AlchemyStandScreenHandler>
         int brewingTexturePosX = i + 17;
         int brewingTexturePosY = j + 50;
         int brewingTextureSize = EssenceAssetLoader.ESSENCE_CONTAINER_TEXTURE_SIZE;
-        context.drawTexture(EssenceAssetLoader.ESSENCE_CONTAINER_TEXTURE, brewingTexturePosX, brewingTexturePosY, 16, 16, 0, 0, brewingTextureSize, brewingTextureSize, brewingTextureSize, brewingTextureSize);
+        context.drawTexture(RenderLayer::getGuiTextured, EssenceAssetLoader.ESSENCE_CONTAINER_TEXTURE, brewingTexturePosX, brewingTexturePosY, 16, 16, 0, 0, brewingTextureSize, brewingTextureSize, brewingTextureSize, brewingTextureSize);
         int m = this.handler.getBrewTime();
         if (m > 0) {
             int n = (int) (28.0F * (1.0F - (float) m / 400.0F));
             if (n > 0) {
                 Quadruple<Identifier, Integer, Identifier, Integer> textures = EssenceAssetLoader.getTexturesByEssence(this.handler.getEssences().get(this.handler.getSelectedIndex()).getEssence());
                 int visible = MathHelper.floor(MathHelper.clamp((10 * (400 - m) + 400 - 1) / 400, 0, 10));
-                context.drawTexture(textures.getThird(), brewingTexturePosX + 3, brewingTexturePosY + 3 + 10 - visible, 10, visible, 0, textures.getFourth() - visible, textures.getFourth(), visible, textures.getFourth(), textures.getFourth());
+                context.drawTexture(RenderLayer::getGuiTextured, textures.getThird(), brewingTexturePosX + 3, brewingTexturePosY + 3 + 10 - visible, 10, visible, 0, textures.getFourth() - visible, textures.getFourth(), visible, textures.getFourth(), textures.getFourth());
             }
 
             // Bubbles
             n = BUBBLES_PROGRESS[m / 2 % 7];
             if (n > 0) {
-                context.drawGuiTexture(BUBBLES_TEXTURE, 12, 29, 0, 29 - n, i + 58, j + 14 + 29 - n, 12, n);
+                context.drawGuiTexture(RenderLayer::getGuiTextured, BUBBLES_TEXTURE, 12, 29, 0, 29 - n, i + 58, j + 14 + 29 - n, 12, n);
             }
         }
     }
@@ -151,12 +152,14 @@ public class AlchemyStandScreen extends HandledScreen<AlchemyStandScreenHandler>
         int sizeA = textures.getSecond();
         int sizeB = textures.getFourth();
 
-        context.drawTexture(textures.getFirst(), x, y, 16, 16, 0, 0, sizeA, sizeA, sizeA, sizeA);
+        //context.drawTexture(RenderLayer::getGuiTextured, textures.getFirst(), x, y, 16, 16, 0, 0, sizeA, sizeA, sizeA, sizeA);
+        context.drawTexture(RenderLayer::getGuiTextured, textures.getFirst(), x, y, 0, 0, 16, 16, sizeA, sizeA, sizeA, sizeA);
         int count = container.getCount();
         int maxCount = container.getLimit();
         int visible = MathHelper.floor(MathHelper.clamp((10 * count + maxCount - 1) / maxCount, 0, 10));
         if (visible > 0) {
-            context.drawTexture(textures.getThird(), x + 3, y + 3 + 10 - visible, 10, visible, 0, sizeB - visible, sizeB, visible, sizeB, sizeB);
+            //context.drawTexture(RenderLayer::getGuiTextured, textures.getThird(), x + 3, y + 3 + 10 - visible, 10, visible, 0, sizeB - visible, sizeB, visible, sizeB, sizeB);
+            context.drawTexture(RenderLayer::getGuiTextured, textures.getThird(), x + 3, y + 3 + 10 - visible, 0, sizeB - visible, 10, visible, sizeB, visible, sizeB, sizeB);
         }
     }
 

@@ -10,13 +10,14 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsage;
+import net.minecraft.item.consume.UseAction;
 import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.stat.Stats;
 import net.minecraft.text.Text;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
-import net.minecraft.util.TypedActionResult;
-import net.minecraft.util.UseAction;
 import net.minecraft.world.World;
 import net.minecraft.world.event.GameEvent;
 
@@ -42,11 +43,11 @@ public class ElixirItem extends Item {
         if (playerEntity instanceof ServerPlayerEntity) {
             Criteria.CONSUME_ITEM.trigger((ServerPlayerEntity) playerEntity, stack);
         }
-        if (!world.isClient) {
+        if (world instanceof ServerWorld serverWorld) {
             ElixirContentsComponent elixirContentsComponent = (ElixirContentsComponent) stack.getOrDefault(ModDataComponentTypes.ELIXIR_CONTENTS, ElixirContentsComponent.DEFAULT);
             elixirContentsComponent.forEachEffect((effect) -> {
                 if (effect.getEffectType().value().isInstant()) {
-                    effect.getEffectType().value().applyInstantEffect(playerEntity, playerEntity, user, effect.getAmplifier(), 1.0);
+                    effect.getEffectType().value().applyInstantEffect(serverWorld, playerEntity, playerEntity, user, effect.getAmplifier(), 1.0);
                 } else {
                     user.addStatusEffect(effect);
                 }
@@ -81,14 +82,15 @@ public class ElixirItem extends Item {
     }
 
     @Override
-    public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
+    public ActionResult use(World world, PlayerEntity user, Hand hand) {
         return ItemUsage.consumeHeldItem(world, user, hand);
     }
 
-    @Override
+    // TODO: Items no longer have getTranslationKey.
+    /*@Override
     public String getTranslationKey(ItemStack stack) {
         return Elixir.finishTranslationKey(stack.getOrDefault(ModDataComponentTypes.ELIXIR_CONTENTS, ElixirContentsComponent.DEFAULT).elixir(), this.getTranslationKey() + ".", ".effect.");
-    }
+    }*/
 
     @Override
     public void appendTooltip(ItemStack stack, TooltipContext context, List<Text> tooltip, TooltipType type) {

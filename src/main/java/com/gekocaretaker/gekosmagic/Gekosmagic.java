@@ -16,7 +16,6 @@ import com.gekocaretaker.gekosmagic.loot.function.ModLootFunctionTypes;
 import com.gekocaretaker.gekosmagic.network.ModPayloads;
 import com.gekocaretaker.gekosmagic.potion.ModPotions;
 import com.gekocaretaker.gekosmagic.predicate.entity.ModEntitySubPredicateTypes;
-import com.gekocaretaker.gekosmagic.recipe.AlchemyRecipeRegistry;
 import com.gekocaretaker.gekosmagic.recipe.ModRecipeSerializers;
 import com.gekocaretaker.gekosmagic.recipe.ModRecipeTypes;
 import com.gekocaretaker.gekosmagic.registry.ModRegistries;
@@ -35,8 +34,6 @@ import org.slf4j.LoggerFactory;
 public class Gekosmagic implements ModInitializer {
     public static final String MODID = "gekosmagic";
     public static final Logger LOGGER = LoggerFactory.getLogger(MODID);
-
-    public static final AlchemyRecipeRegistry alchemyRecipeRegistry = AlchemyRecipeRegistry.create();
 
     @Override
     public void onInitialize() {

@@ -3,6 +3,7 @@ package com.gekocaretaker.gekosmagic.effect;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectCategory;
+import net.minecraft.server.world.ServerWorld;
 
 public class AbsolutelyNotEffect extends StatusEffect {
     protected AbsolutelyNotEffect() {
@@ -15,7 +16,7 @@ public class AbsolutelyNotEffect extends StatusEffect {
     }
 
     @Override
-    public boolean applyUpdateEffect(LivingEntity entity, int amplifier) {
-        return super.applyUpdateEffect(entity, amplifier);
+    public boolean applyUpdateEffect(ServerWorld world, LivingEntity entity, int amplifier) {
+        return super.applyUpdateEffect(world, entity, amplifier);
     }
 }

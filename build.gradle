@@ -79,8 +79,9 @@ dependencies {
 
 	modImplementation "maven.modrinth:fractal-lib:${project.fractal_version}"
 
-	modCompileOnly "dev.emi:emi-fabric:${project.emi_version}:api"
-	modLocalRuntime("dev.emi:emi-fabric:${project.emi_version}");
+	// EMI is not yet on 1.21.3, so it will be commented out for now.
+	//modCompileOnly "dev.emi:emi-fabric:${project.emi_version}:api"
+	//modLocalRuntime("dev.emi:emi-fabric:${project.emi_version}");
 
 	modImplementation ("com.klikli_dev:modonomicon-${project.minecraft_version}-fabric:${project.modonomicon_version}") { exclude(group: "com.klikli_dev") }
 }

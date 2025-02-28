@@ -2,18 +2,18 @@ package com.gekocaretaker.gekosmagic.client.render.entity.model;
 
 import com.gekocaretaker.gekosmagic.Gekosmagic;
 import com.gekocaretaker.gekosmagic.client.render.entity.animation.GeckoEntityAnimations;
-import com.gekocaretaker.gekosmagic.entity.passive.GeckoEntity;
+import com.gekocaretaker.gekosmagic.client.render.entity.state.GeckoEntityRenderState;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.model.*;
 import net.minecraft.client.render.VertexConsumer;
+import net.minecraft.client.render.entity.model.EntityModel;
 import net.minecraft.client.render.entity.model.EntityModelLayer;
-import net.minecraft.client.render.entity.model.SinglePartEntityModel;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.MathHelper;
 
 @Environment(EnvType.CLIENT)
-public class GeckoEntityModel<T extends GeckoEntity> extends SinglePartEntityModel<T> {
+public class GeckoEntityModel extends EntityModel<GeckoEntityRenderState> {
     public static final EntityModelLayer GECKO = new EntityModelLayer(Gekosmagic.identify("gecko"), "main");
     public static final EntityModelLayer GECKO_COLLAR = new EntityModelLayer(Gekosmagic.identify("gecko"), "collar");
 
@@ -27,6 +27,7 @@ public class GeckoEntityModel<T extends GeckoEntity> extends SinglePartEntityMod
     private final ModelPart head;
 
     public GeckoEntityModel(ModelPart root) {
+        super(root);
         this.root = root.getChild("root");
         this.body = this.root.getChild("body");
         this.right_arm = this.body.getChild("right_arm");
@@ -76,25 +77,38 @@ public class GeckoEntityModel<T extends GeckoEntity> extends SinglePartEntityMod
         this.head.pitch = headPitch * 0.017453292F;
     }
 
-    @Override
+    /*@Override
     public void render(MatrixStack matrices, VertexConsumer vertices, int light, int overlay, int color) {
         root.render(matrices, vertices, light, overlay, color);
-    }
+    }*/
 
-    @Override
+    /*@Override
     public ModelPart getPart() {
         return root;
-    }
+    }*/
 
     @Override
+    public void setAngles(GeckoEntityRenderState state) {
+        this.getRootPart().traverse().forEach(ModelPart::resetTransform);
+
+        this.animateWalking(GeckoEntityAnimations.WALK, 1.5F, 1.0F, 1.0F, 1.0F);
+        if (state.inSittingPose) {
+            this.animate(GeckoEntityAnimations.SIT);
+        }
+        if (state.isDancing) {
+            this.animate(GeckoEntityAnimations.DANCE);
+        }
+    }
+
+    /*@Override
     public void setAngles(T entity, float limbAngle, float limbDistance, float animationProgress, float headYaw, float headPitch) {
         this.getPart().traverse().forEach(ModelPart::resetTransform);
         this.setHeadAngles(headYaw, headPitch);
 
-        this.animateMovement(GeckoEntityAnimations.WALK, limbAngle, limbDistance, 2f, 2.5f);
+        this.animateWalking(GeckoEntityAnimations.WALK, limbAngle, limbDistance, 2f, 2.5f);
         this.updateAnimation(entity.danceAnimationState, GeckoEntityAnimations.DANCE, animationProgress, 1f);
         if (entity.isInSittingPose()) {
             this.updateAnimation(entity.sitAnimationState, GeckoEntityAnimations.SIT, animationProgress, 1.0F);
         }
-    }
+    }*/
 }
