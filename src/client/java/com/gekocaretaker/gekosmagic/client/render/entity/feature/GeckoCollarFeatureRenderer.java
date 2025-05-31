@@ -5,6 +5,9 @@ import com.gekocaretaker.gekosmagic.client.render.entity.model.GeckoEntityModel;
 import com.gekocaretaker.gekosmagic.client.render.entity.state.GeckoEntityRenderState;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.client.render.OverlayTexture;
+import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.entity.feature.FeatureRenderer;
 import net.minecraft.client.render.entity.feature.FeatureRendererContext;
@@ -16,11 +19,9 @@ import net.minecraft.util.Identifier;
 @Environment(EnvType.CLIENT)
 public class GeckoCollarFeatureRenderer extends FeatureRenderer<GeckoEntityRenderState, GeckoEntityModel> {
     private static final Identifier SKIN = Gekosmagic.identify("textures/entity/gecko/gecko_collar.png");
-    private final GeckoEntityModel model;
 
     public GeckoCollarFeatureRenderer(FeatureRendererContext<GeckoEntityRenderState, GeckoEntityModel> context, EntityModelLoader loader) {
         super(context);
-        this.model = new GeckoEntityModel(loader.getModelPart(GeckoEntityModel.GECKO_COLLAR));
     }
 
     @Override
@@ -28,7 +29,8 @@ public class GeckoCollarFeatureRenderer extends FeatureRenderer<GeckoEntityRende
         DyeColor dyeColor = state.collarColor;
         if (dyeColor != null) {
             int j = dyeColor.getEntityColor();
-            render(this.model, SKIN, matrices, vertexConsumers, light, state, j);
+            VertexConsumer vertexConsumer = vertexConsumers.getBuffer(RenderLayer.getEntityCutoutNoCull(SKIN));
+            this.getContextModel().render(matrices, vertexConsumer, light, OverlayTexture.DEFAULT_UV, j);
         }
     }
 }

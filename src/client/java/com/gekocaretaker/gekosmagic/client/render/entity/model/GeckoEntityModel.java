@@ -6,15 +6,19 @@ import com.gekocaretaker.gekosmagic.client.render.entity.state.GeckoEntityRender
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.model.*;
-import net.minecraft.client.render.VertexConsumer;
+import net.minecraft.client.render.entity.model.BabyModelTransformer;
 import net.minecraft.client.render.entity.model.EntityModel;
 import net.minecraft.client.render.entity.model.EntityModelLayer;
-import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.client.render.entity.model.ModelTransformer;
 import net.minecraft.util.math.MathHelper;
+
+import java.util.Set;
 
 @Environment(EnvType.CLIENT)
 public class GeckoEntityModel extends EntityModel<GeckoEntityRenderState> {
+    public static final ModelTransformer BABY_TRANSFORMER = new BabyModelTransformer(Set.of("head"));
     public static final EntityModelLayer GECKO = new EntityModelLayer(Gekosmagic.identify("gecko"), "main");
+    public static final EntityModelLayer GECKO_BABY = new EntityModelLayer(Gekosmagic.identify("gecko_baby"), "main");
     public static final EntityModelLayer GECKO_COLLAR = new EntityModelLayer(Gekosmagic.identify("gecko"), "collar");
 
     private final ModelPart root;
@@ -69,6 +73,10 @@ public class GeckoEntityModel extends EntityModel<GeckoEntityRenderState> {
         return TexturedModelData.of(modelData, 64, 64);
     }
 
+    public static TexturedModelData getBabyTexturedModelData() {
+        return getTexturedModelData().transform(BABY_TRANSFORMER);
+    }
+
     private void setHeadAngles(float headYaw, float headPitch) {
         headYaw = MathHelper.clamp(headYaw, -30.0F, 30.0F);
         headPitch = MathHelper.clamp(headPitch, -25.0F, 45.0F);
@@ -77,38 +85,18 @@ public class GeckoEntityModel extends EntityModel<GeckoEntityRenderState> {
         this.head.pitch = headPitch * 0.017453292F;
     }
 
-    /*@Override
-    public void render(MatrixStack matrices, VertexConsumer vertices, int light, int overlay, int color) {
-        root.render(matrices, vertices, light, overlay, color);
-    }*/
-
-    /*@Override
-    public ModelPart getPart() {
-        return root;
-    }*/
-
     @Override
     public void setAngles(GeckoEntityRenderState state) {
-        this.getRootPart().traverse().forEach(ModelPart::resetTransform);
+        //this.getRootPart().traverse().forEach(ModelPart::resetTransform);
+        super.setAngles(state);
+        this.setHeadAngles(state.yawDegrees, state.pitch);
 
-        this.animateWalking(GeckoEntityAnimations.WALK, 1.5F, 1.0F, 1.0F, 1.0F);
+        this.animateWalking(GeckoEntityAnimations.WALK, state.limbFrequency, state.limbAmplitudeMultiplier, 3.0F, 2.5F);
         if (state.inSittingPose) {
             this.animate(GeckoEntityAnimations.SIT);
         }
         if (state.isDancing) {
-            this.animate(GeckoEntityAnimations.DANCE);
+            this.animate(state.danceAnimationState, GeckoEntityAnimations.DANCE, state.age);
         }
     }
-
-    /*@Override
-    public void setAngles(T entity, float limbAngle, float limbDistance, float animationProgress, float headYaw, float headPitch) {
-        this.getPart().traverse().forEach(ModelPart::resetTransform);
-        this.setHeadAngles(headYaw, headPitch);
-
-        this.animateWalking(GeckoEntityAnimations.WALK, limbAngle, limbDistance, 2f, 2.5f);
-        this.updateAnimation(entity.danceAnimationState, GeckoEntityAnimations.DANCE, animationProgress, 1f);
-        if (entity.isInSittingPose()) {
-            this.updateAnimation(entity.sitAnimationState, GeckoEntityAnimations.SIT, animationProgress, 1.0F);
-        }
-    }*/
 }

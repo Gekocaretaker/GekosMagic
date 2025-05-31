@@ -16,6 +16,7 @@ import net.minecraft.client.render.entity.FlyingItemEntityRenderer;
 public class ModRenders {
     public static void init() {
         EntityModelLayerRegistry.registerModelLayer(GeckoEntityModel.GECKO, GeckoEntityModel::getTexturedModelData);
+        EntityModelLayerRegistry.registerModelLayer(GeckoEntityModel.GECKO_BABY, GeckoEntityModel::getBabyTexturedModelData);
         EntityModelLayerRegistry.registerModelLayer(GeckoEntityModel.GECKO_COLLAR, GeckoEntityModel::getTexturedModelData);
         EntityRendererRegistry.register(ModEntities.GECKO, GeckoRenderer::new);
         EntityRendererRegistry.register(ModEntities.ELIXIR, FlyingItemEntityRenderer::new);

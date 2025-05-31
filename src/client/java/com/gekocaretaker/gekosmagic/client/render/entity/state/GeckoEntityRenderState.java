@@ -4,6 +4,7 @@ import com.gekocaretaker.gekosmagic.Gekosmagic;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.render.entity.state.LivingEntityRenderState;
+import net.minecraft.entity.AnimationState;
 import net.minecraft.util.DyeColor;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
@@ -16,6 +17,7 @@ public class GeckoEntityRenderState extends LivingEntityRenderState {
     public Identifier texture;
     @Nullable
     public DyeColor collarColor;
+    public AnimationState danceAnimationState = new AnimationState();
 
     public GeckoEntityRenderState() {
         this.texture = DEFAULT_TEXTURE;

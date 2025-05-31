@@ -86,11 +86,10 @@ public class ElixirItem extends Item {
         return ItemUsage.consumeHeldItem(world, user, hand);
     }
 
-    // TODO: Items no longer have getTranslationKey.
-    /*@Override
-    public String getTranslationKey(ItemStack stack) {
-        return Elixir.finishTranslationKey(stack.getOrDefault(ModDataComponentTypes.ELIXIR_CONTENTS, ElixirContentsComponent.DEFAULT).elixir(), this.getTranslationKey() + ".", ".effect.");
-    }*/
+    @Override
+    public Text getName(ItemStack stack) {
+        return Text.translatable(Elixir.finishTranslationKey(stack.getOrDefault(ModDataComponentTypes.ELIXIR_CONTENTS, ElixirContentsComponent.DEFAULT).elixir(), this.translationKey + ".", ".effect."));
+    }
 
     @Override
     public void appendTooltip(ItemStack stack, TooltipContext context, List<Text> tooltip, TooltipType type) {

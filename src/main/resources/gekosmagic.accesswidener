@@ -1,3 +1,4 @@
 accessWidener v2 named
 
 accessible field net/minecraft/predicate/entity/EntitySubPredicateTypes$DynamicVariantType codec Lcom/mojang/serialization/MapCodec;
+accessible method net/minecraft/entity/mob/PhantomEntity testTargetPredicate (Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/entity/LivingEntity;Lnet/minecraft/entity/ai/TargetPredicate;)Z

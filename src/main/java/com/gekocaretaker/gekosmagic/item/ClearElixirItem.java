@@ -14,11 +14,10 @@ public class ClearElixirItem extends ElixirItem {
         super(settings);
     }
 
-    // TODO: Items no longer have getTranslationKey.
-    /*@Override
-    public String getTranslationKey(ItemStack stack) {
-        return "item.gekosmagic.elixir.basic.effect.water";
-    }*/
+    @Override
+    public Text getName(ItemStack stack) {
+        return Text.translatable("item.gekosmagic.elixir.basic.effect.water");
+    }
 
     @Override
     public void appendTooltip(ItemStack stack, TooltipContext context, List<Text> tooltip, TooltipType type) {

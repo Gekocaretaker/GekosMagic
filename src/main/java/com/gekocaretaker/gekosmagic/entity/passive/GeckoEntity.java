@@ -26,9 +26,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.registry.tag.DamageTypeTags;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.ActionResult;
@@ -69,8 +67,8 @@ public class GeckoEntity extends TameableEntity implements VariantHolder<Registr
 
     @Override
     protected void initGoals() {
-        this.goalSelector.add(1, new SwimGoal(this));
-        this.goalSelector.add(1, new TameableEscapeDangerGoal(1.5, DamageTypeTags.PANIC_ENVIRONMENTAL_CAUSES));
+        this.goalSelector.add(0, new SwimGoal(this));
+        this.goalSelector.add(1, new TameableEscapeDangerGoal(1.5));
         this.goalSelector.add(2, new SitGoal(this));
         this.goalSelector.add(5, new FollowOwnerGoal(this, 1.0, 10.0F, 2.0F));
         this.goalSelector.add(6, new AnimalMateGoal(this, 1.0));
@@ -123,7 +121,7 @@ public class GeckoEntity extends TameableEntity implements VariantHolder<Registr
 
     @Override
     public void tickMovement() {
-        if (this.songSource == null || !this.songSource.isWithinDistance(this.getPos(), 3.46) || !this.getWorld().getBlockState(this.songSource).isOf(Blocks.JUKEBOX)) {
+        if (this.songSource == null || !this.songSource.isWithinDistance(this.getPos(), 15) || !this.getWorld().getBlockState(this.songSource).isOf(Blocks.JUKEBOX)) {
             this.songPlaying = false;
             this.songSource = null;
         }
@@ -199,7 +197,6 @@ public class GeckoEntity extends TameableEntity implements VariantHolder<Registr
         super.initDataTracker(builder);
         builder.add(COLLAR_COLOR, DyeColor.RED.getId());
         builder.add(VARIANT, this.getRegistryManager().getOrThrow(ModRegistryKeys.GECKO_VARIANT).getEntry(GeckoVariants.DEFAULT.getValue()).get());
-        //builder.add(VARIANT, this.getRegistryManager().getOrThrow(ModRegistryKeys.GECKO_VARIANT).get(GeckoVariants.DEFAULT));
     }
 
     @Override
@@ -320,16 +317,15 @@ public class GeckoEntity extends TameableEntity implements VariantHolder<Registr
                     }
 
                     return ActionResult.SUCCESS;
+                } else {
+                    actionResult = super.interactMob(player, hand);
+                    if (!actionResult.isAccepted()) {
+                        this.setSitting(!this.isSitting());
+                        return ActionResult.SUCCESS;
+                    }
+                    return actionResult;
                 }
             }
-
-            actionResult = super.interactMob(player, hand);
-            if (!actionResult.isAccepted()) {
-                this.setSitting(!this.isSitting());
-                return ActionResult.SUCCESS;
-            }
-
-            return actionResult;
         } else if (this.isBreedingItem(itemStack)) {
             if (!this.getWorld().isClient()) {
                 this.eat(player, hand, itemStack);
