@@ -4,6 +4,7 @@ import com.gekocaretaker.gekosmagic.component.ModDataComponentTypes;
 import com.gekocaretaker.gekosmagic.elixir.Elixir;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.component.DataComponentTypes;
@@ -24,7 +25,6 @@ import net.minecraft.screen.ScreenTexts;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-import net.minecraft.util.Pair;
 import net.minecraft.util.math.ColorHelper;
 
 import java.util.*;
@@ -233,11 +233,11 @@ public record ElixirContentsComponent(Optional<RegistryEntry<Elixir>> elixir, Op
         if (!list.isEmpty()) {
             textConsumer.accept(ScreenTexts.EMPTY);
             textConsumer.accept(Text.translatable("potion.whenDrank").formatted(Formatting.DARK_PURPLE));
-            Iterator<Pair<RegistryEntry<EntityAttribute>, EntityAttributeModifier>> iterator1 = list.iterator();;
+            Iterator<Pair<RegistryEntry<EntityAttribute>, EntityAttributeModifier>> iterator1 = list.iterator();
 
-            while (iterator.hasNext()) {
+            while (iterator1.hasNext()) {
                 Pair<RegistryEntry<EntityAttribute>, EntityAttributeModifier> pair = iterator1.next();
-                EntityAttributeModifier entityAttributeModifier = pair.getRight();
+                EntityAttributeModifier entityAttributeModifier = pair.getSecond();
                 double d = entityAttributeModifier.value();
                 double e;
                 if (entityAttributeModifier.operation() != EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE && entityAttributeModifier.operation() != EntityAttributeModifier.Operation.ADD_MULTIPLIED_TOTAL) {
@@ -247,10 +247,10 @@ public record ElixirContentsComponent(Optional<RegistryEntry<Elixir>> elixir, Op
                 }
 
                 if (d > 0.0) {
-                    textConsumer.accept(Text.translatable("attribute.modifier.plus." + entityAttributeModifier.operation().getId(), new Object[]{AttributeModifiersComponent.DECIMAL_FORMAT.format(e), Text.translatable(pair.getLeft().value().getTranslationKey())}).formatted(Formatting.BLUE));
+                    textConsumer.accept(Text.translatable("attribute.modifier.plus." + entityAttributeModifier.operation().getId(), new Object[]{AttributeModifiersComponent.DECIMAL_FORMAT.format(e), Text.translatable(pair.getFirst().value().getTranslationKey())}).formatted(Formatting.BLUE));
                 } else if (d < 0.0) {
                     e *= -1.0;
-                    textConsumer.accept(Text.translatable("attribute.modifier.take." + entityAttributeModifier.operation().getId(), new Object[]{AttributeModifiersComponent.DECIMAL_FORMAT.format(e), Text.translatable(pair.getLeft().value().getTranslationKey())}).formatted(Formatting.RED));
+                    textConsumer.accept(Text.translatable("attribute.modifier.take." + entityAttributeModifier.operation().getId(), new Object[]{AttributeModifiersComponent.DECIMAL_FORMAT.format(e), Text.translatable(pair.getFirst().value().getTranslationKey())}).formatted(Formatting.RED));
                 }
             }
         }
